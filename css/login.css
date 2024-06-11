@@ -11,14 +11,14 @@ body{
 
 .loginHeader h1{
     font-size: 100px;
-    color: #f685a2;
+    color: #22a853;
     padding: 0px;
     margin: 0px;
     margin-top: 50px;
 }
 
 .loginHeader p{
-    color: #ffdae3;
+    color: #9cce75;
     font-size: 50px;
     margin: 0px;
     text-transform: uppercase;
@@ -29,7 +29,7 @@ body{
     content: '';
     display: block;
     height: 5px;
-    background: #f685a2;
+    background: #649037;
     margin: 0 auto;
 }
 
@@ -57,7 +57,7 @@ body{
 .loginInputsContainer input{
     height: 25px;
     width: 100%;
-    border: 2px solid #d40339;
+    border: 2px solid #fac819;
     font-size: 20px;
     padding: 5px;
     text-align: left;
@@ -72,7 +72,7 @@ body{
 .loginButtonContainer button{
     font-size: 20px;
     padding: 10px 40px;
-    background: #f685a2;
+    background: #88171d;
     border: none;
-    color: white;
+    color: #f3c21f;
 }
