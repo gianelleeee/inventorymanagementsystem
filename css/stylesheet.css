@@ -1,0 +1,191 @@
+*,*::before,*::after{box-sizing:border-box}body,h1,h2,h3,h4,p,figure,blockquote,dl,dd{margin:0}ul[role="list"],ol[role="list"]{list-style:none}html:focus-within{scroll-behavior:smooth}body{min-height:100vh;text-rendering:optimizeSpeed;line-height:1.5}a:not([class]){text-decoration-skip-ink:auto}img,picture{max-width:100%;display:block}input,button,textarea,select{font:inherit}@media(prefers-reduced-motion:reduce){html:focus-within{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}
+/* LOGIN CSS */
+
+#loginBody{
+    background: url('../images/login-background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.loginHeader{
+    text-align: center; 
+    margin-bottom: 150px;
+}
+
+.loginHeader h1{
+    font-size: 100px;
+    color: #22a853;
+    padding: 0px;
+    margin: 0px;
+    margin-top: 50px;
+}
+
+.loginHeader p{
+    color: #9cce75;
+    font-size: 50px;
+    margin: 0px;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.loginHeader p:after{
+    content: '';
+    display: block;
+    height: 5px;
+    background: #649037;
+    margin: 0 auto;
+}
+
+.loginBody form{
+    margin: 0 auto;
+    width: 400px;
+    background: rgba(0,0,0,.5);
+    padding: 50px;
+    border: 3px solid white;
+    border-radius: 8px;
+}
+
+.loginInputsContainer{
+    margin-top: 20px;
+}
+
+.loginInputsContainer label{
+    display: block;
+    text-transform: uppercase;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.loginInputsContainer input{
+    height: 25px;
+    width: 100%;
+    border: 2px solid #fac819;
+    font-size: 20px;
+    padding: 5px;
+    text-align: left;
+    font-style: italic;
+}
+
+.loginButtonContainer{
+    margin-top: 40px;
+    text-align: center;
+}
+
+.loginButtonContainer button{
+    font-size: 20px;
+    padding: 10px 40px;
+    background: #88171d;
+    border: none;
+    color: #f3c21f;
+}
+
+/* DASHBOARD CSS */
+
+ul {
+    list-style-type: none;
+  }
+
+#dashboardMainContainer{
+    display: flex;
+    flex-direction: row;
+}
+
+.dashboard_sidebar{
+    width: 20%;
+    background: #323232;
+}
+
+.dashboard_content_container{
+    width: 80%;
+    background: #f4f6f9;
+}
+
+.dashboard_logo{
+    color: #649037;
+    font-size: 80px;
+    text-align: center;
+}
+
+.dashboard_sidebar_user{
+    text-align: center;
+    position: relative;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ffff;
+}
+
+.dashboard_sidebar_user img{
+    width: 80px;
+    display: inline-block;
+    border-radius: 50%;
+    border: 2px solid #649037;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.dashboard_sidebar_user span{
+    text-transform: uppercase;
+    color: #ffff;
+}
+
+ul.dashboard_menu_lists{
+    padding: 1px;
+    margin-top: 20px;
+}
+
+ul.dashboard_menu_lists li{
+    padding: 15px 15px;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+ul.dashboard_menu_lists li a{
+    text-decoration: none;
+    color: #ffff;
+    height: 100%;
+    display: block;
+}
+
+ul.dashboard_menu_lists li i{
+    font-size: 25px;
+}
+
+ul.dashboard_menu_lists li:hover{
+    background: #649037;
+    color: #ffff;
+    transition: 0.3s all;
+}
+
+ul.dashboard_menu_lists li.menuActive{
+    background: #649037;
+    color: #ffff;
+}
+
+.dashboard_topNav{
+    background: #ffff;
+    padding: 20px;
+}
+
+.dashboard_topNav a{
+    color: #848383;
+    font-size: 18px;
+    text-decoration: none;
+}
+
+#logoutBtn{
+    float: right;
+}
+
+.dashboard_content{
+    padding: 50px 10px 10px 10px;
+}
+
+.dashboard_content_main{
+    background: #fff;
+    min-height: 800px;
+    height: 100%;
+}
