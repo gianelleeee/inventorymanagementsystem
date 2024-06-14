@@ -1,7 +1,7 @@
 <?php
     //start the session
     session_start();
-
+    
     $error_message = '';
     if($_POST){
         include('database/connection.php');
