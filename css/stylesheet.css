@@ -9,6 +9,7 @@
 
 body{
     font-family: Arial, Helvetica, sans-serif;
+    height: 100%;
 }
 
 .loginHeader{
@@ -98,7 +99,6 @@ ul {
 .dashboard_sidebar{
     width: 20%;
     background: #323232;
-    height: 100vh;
 }
 
 .dashboard_content_container{
@@ -323,4 +323,8 @@ table td{
     font-weight: bold;
     text-transform: uppercase;
     color: #649037;
+}
+
+.updateUser, .deleteUser{
+    display: block;
 }
