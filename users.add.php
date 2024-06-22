@@ -15,7 +15,7 @@
 <html>
 <head>
     <title>IMS Dashboard</title>
-    <link rel="stylesheet" href="css/stylesheet.css">
+    <link rel="stylesheet" href="css/stylesheet.css?v=<?= time();?>">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.4/css/bootstrap-dialog.min.css" integrity="sha512-PvZCtvQ6xGBLWHcXnyHD67NTP+a+bNrToMsIdX/NUqhw+npjLDhlMZ/PhSHZN4s9NdmuumcxKHQqbHlGVqc8ow==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
@@ -108,7 +108,7 @@
         </div>
     </div>
 
-<script src="js/script.js"></script>
+<script src="js/script.js?v=<?= time();?>"></script>
 <script src="js/jquery3.6.1.js"></script>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">

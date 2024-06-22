@@ -145,21 +145,25 @@ ul.dashboard_menu_lists{
     margin-top: 20px;
 }
 
-ul.dashboard_menu_lists li{
-    padding: 15px 15px;
+ul.dashboard_menu_lists li.liMainMenu{
+    padding-top: 15px;
     font-size: 20px;
     text-transform: uppercase;
 }
 
-ul.dashboard_menu_lists li a{
+ul.dashboard_menu_lists li.liMainMenu a{
     text-decoration: none;
     color: #ffff;
     height: 100%;
     display: block;
+    padding: 0px 15px;
+    padding-right: 5px;
+    padding-bottom: 15px;
 }
 
-ul.dashboard_menu_lists li i{
+ul.dashboard_menu_lists li.liMainMenu a i{
     font-size: 25px;
+    width: 30;
 }
 
 ul.dashboard_menu_lists li:hover{
@@ -327,4 +331,26 @@ table td{
 
 .updateUser, .deleteUser{
     display: block;
+}
+
+.subMenuLink{
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    text-transform: none;
+}
+
+.subMenus{
+    background: #4d7326;
+    display: none;
+}
+
+.mainMenuIconArrow{
+    float: right;
+    font-size: 18px;
+    margin-top: 3px;
+    margin-right: 4px;
+}
+
+.circle{
+    font-size: 15px;
 }

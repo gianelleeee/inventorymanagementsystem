@@ -43,3 +43,21 @@ var sideBarIsOpen = true;
         }
         
     });
+
+    // submenu show/hide function
+    document.addEventListener('click', function(e){
+        let clickedE1 = e.target;
+
+        if(clickedE1.classList.contains('showHideSideMenu')){
+            let targetMenu = clickedE1.dataset.submenu;
+
+            //check if there is submenu
+            if(targetMenu != undefined){
+               let subMenu =  document.getElementById(targetMenu);
+               
+               if(subMenu.style.display === 'block') subMenu.style.height = 'none';
+               else subMenu.style.display = 'block';
+            }
+        }
+            
+    });
