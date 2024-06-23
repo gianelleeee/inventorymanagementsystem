@@ -45,19 +45,62 @@ var sideBarIsOpen = true;
     });
 
     // submenu show/hide function
-    document.addEventListener('click', function(e){
-        let clickedE1 = e.target;
+    document.addEventListener('click', function(e) {
+        let clickedEl = e.target;
+    
+        if (clickedEl.classList.contains('showHideSideMenu')){
+            let subMenu = clickedEl.closest('li').querySelector('.subMenus');
+            let mainMenuIcon = clickedEl.closest('li').querySelector('.mainMenuIconArrow');
 
-        if(clickedE1.classList.contains('showHideSideMenu')){
-            let targetMenu = clickedE1.dataset.submenu;
+            //Close all submenus
+            let subMenus = document.querySelectorAll('.subMenus');
+            subMenus.forEach((sub) => {
+                if(subMenu !== sub) sub.style.display = 'none';
+            });
 
-            //check if there is submenu
-            if(targetMenu != undefined){
-               let subMenu =  document.getElementById(targetMenu);
-               
-               if(subMenu.style.display === 'block') subMenu.style.height = 'none';
-               else subMenu.style.display = 'block';
+            //call function to hide/show submenu
+            showHideSubMenu(subMenu, mainMenuIcon);
+
+            // function to show hide submenu
+            function showHideSubMenu(subMenu, mainMenuIcon){
+                // Check if there is a submenu
+                if (subMenu !== null) {
+                    if (subMenu.style.display === 'block') {
+                        subMenu.style.display = 'none';
+                        mainMenuIcon.classList.remove('fa-angle-down');
+                        mainMenuIcon.classList.add('fa-angle-left');
+
+                    } else {
+                        subMenu.style.display = 'block';
+                        mainMenuIcon.classList.remove('fa-angle-left');
+                        mainMenuIcon.classList.add('fa-angle-down');
+
+                    }
+                }
+
             }
+
+
+
         }
-            
     });
+
+
+    // add or hid active class in dashboard
+    
+    let pathArray = window.location.pathname.split('/');
+    let curFile = pathArray[pathArray.length - 1];
+
+    let curNav = document.querySelector('a[href="./'+ curFile +'"]');
+    curNav.classList.add('subMenuActive');
+
+    let mainNav = curNav.closest('li.liMainMenu');
+    mainNav.style.background = '#649037';
+
+    let subMenu = curNav.closest('.subMenus');
+    let mainMenuIcon = clickedEl.closest('li').querySelector('i.mainMenuIconArrow');
+
+
+    //call function to hide/show submenu
+    showHideSubMenu(subMenu, mainMenuIcon);
+

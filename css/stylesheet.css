@@ -147,7 +147,7 @@ ul.dashboard_menu_lists{
 
 ul.dashboard_menu_lists li.liMainMenu{
     padding-top: 15px;
-    font-size: 20px;
+    font-size: 18px;
     text-transform: uppercase;
 }
 
@@ -162,8 +162,8 @@ ul.dashboard_menu_lists li.liMainMenu a{
 }
 
 ul.dashboard_menu_lists li.liMainMenu a i{
-    font-size: 25px;
-    width: 30;
+    font-size: 40px !important;
+    width: 30px !important;
 }
 
 ul.dashboard_menu_lists li:hover{
@@ -353,4 +353,11 @@ table td{
 
 .circle{
     font-size: 15px;
+}
+
+.subMenuActive{
+    font-weight: bold;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+    background: #4d7326;
 }
