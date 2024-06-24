@@ -200,6 +200,8 @@ ul.dashboard_menu_lists li.menuActive{
     background: #fff;
     min-height: 800px;
     height: 100%;
+    border: 1px solid #4d7326;
+    padding-left: 20px;
 }
 
 /*ADD USER  */
@@ -340,8 +342,10 @@ table td{
 }
 
 .subMenus{
-    background: #4d7326;
+    background: #649037;
     display: none;
+    margin: 0px -40px;
+    font-size: 18px;
 }
 
 .mainMenuIconArrow{
