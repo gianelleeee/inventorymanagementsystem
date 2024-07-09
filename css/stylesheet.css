@@ -323,6 +323,14 @@ table td{
     padding: 5px;
 }
 
+.product_count{
+    text-align: right;
+    font-size: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #649037;
+}
+
 .user_count{
     text-align: right;
     font-size: 15px;

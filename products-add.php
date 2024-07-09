@@ -39,7 +39,6 @@
                                         <div class="appFormInputContainer">
                                             <label for="description">Description</label>
                                             <textarea class="appFormInput productTextAreaInput" name="description" placeholder="Enter product description..." id="description"></textarea>
-                                     
                                         </div>
                                         <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add Product</button>
                                     </form>
