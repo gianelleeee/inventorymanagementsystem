@@ -10,23 +10,23 @@
                 <ul class="dashboard_menu_lists">
                     <!--  class="menuActive" -->
                     <li class="liMainMenu">
-                        <a href="./dashboard.php"><i class="fa fa-dashboard"></i><span class="menuText"> Dashboard</span></a>
+                        <a href="./dashboard.php"><i class="fa fa-dashboard"></i><span class="menuText">   Dashboard</span></a>
                     </li>
                     <li class="liMainMenu">
                         <a href="javascript:void(0);" class="showHideSubMenu">
                             <i class="fa fa-tag showHideSubMenu"></i> 
-                            <span class="menuText showHideSubMenu"> Product</span>
+                            <span class="menuText showHideSubMenu"> Product Management</span>
                             <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
                         </a>
                         <ul class="subMenus">
-                            <li> <a class="subMenuLink" href="#"><i class="fa-regular fa-circle circle"></i> View Product</a> </li>
-                            <li> <a class="subMenuLink" href="#"><i class="fa-regular fa-circle circle"></i> Add Product</a> </li>
+                            <li> <a class="subMenuLink" href="./products-view.php"><i class="fa-regular fa-circle circle"></i> View Product</a> </li>
+                            <li> <a class="subMenuLink" href="./products-add.php"><i class="fa-regular fa-circle circle"></i> Add Product</a> </li>
                         </ul>
                     </li>
                     <li class="liMainMenu">
                         <a href="javascript:void(0);" class="showHideSubMenu">
                             <i class="fa fa-barcode showHideSubMenu"></i> 
-                            <span class="menuText showHideSubMenu"> SKU</span>
+                            <span class="menuText showHideSubMenu"> SKU Management</span>
                             <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
                         </a>
                         <ul class="subMenus">
@@ -37,7 +37,7 @@
                     <li class="liMainMenu">
                         <a href="javascript:void(0);" class="showHideSubMenu">
                             <i class="fa fa-dollar-sign showHideSubMenu"></i> 
-                            <span class="menuText showHideSubMenu"> Sales</span>
+                            <span class="menuText showHideSubMenu"> Stocks Management</span>
                             <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
                         </a>
                         <ul class="subMenus">
@@ -48,7 +48,7 @@
                     <li class="liMainMenu showHideSubMenu">
                         <a href="javascript:void(0);" class="showHideSubMenu">
                             <i class="fa fa-user-plus showHideSubMenu"></i> 
-                            <span class="menuText showHideSubMenu"> User</span>
+                            <span class="menuText showHideSubMenu"> User Management</span>
                             <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
                         </a>
                         <ul class="subMenus">

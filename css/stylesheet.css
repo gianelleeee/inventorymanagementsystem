@@ -365,3 +365,10 @@ table td{
     border-bottom: 2px solid white;
     background: #4d7326;
 }
+
+.productTextAreaInput{
+    width: 100%;
+    height: 75px;
+    border-radius: 5px;
+    border-color: #d6d7da;
+}

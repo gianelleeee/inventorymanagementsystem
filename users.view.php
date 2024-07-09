@@ -8,16 +8,15 @@
 
     $_SESSION['table'] = 'users';
     $user = $_SESSION['user'];
-    $users = include('database/show-users.php');
+    $users = include('database/show.php');
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IMS Dashboard</title>
-    <link rel="stylesheet" href="css/stylesheet.css?v=<?= time();?>">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/js/all.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.4/css/bootstrap-dialog.min.css" integrity="sha512-PvZCtvQ6xGBLWHcXnyHD67NTP+a+bNrToMsIdX/NUqhw+npjLDhlMZ/PhSHZN4s9NdmuumcxKHQqbHlGVqc8ow==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>IMS View Users</title>
+    <?php include('partials/header-script.php'); ?>
+
 </head>
 <body>
     <div id="dashboardMainContainer">
@@ -72,16 +71,8 @@
         </div>
     </div>
 
-<script src="js/script.js?v=<?= time();?>"></script>
-<script src="js/jquery3.6.1.js"></script>
-<!-- Latest compiled and minified CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-<!-- Optional theme -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-<!-- Latest compiled and minified JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <?php include('partials/scripts.php'); ?>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.4/js/bootstrap-dialog.js" integrity="sha512-AZ+KX5NScHcQKWBfRXlCtb+ckjKYLO1i10faHLPXtGacz34rhXU8KM4t77XXG/Oy9961AeLqB/5o0KTJfy2WiA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
     function script(){
 
@@ -102,34 +93,35 @@
                     var fullname = fname + ' ' + lname;
 
                     BootstrapDialog.confirm({
+                        title: 'Delete User',
                         type: BootstrapDialog.TYPE_DANGER,
-                        message: 'Are you sure to delete ' + fullname + '?',
+                        message: 'Are you sure to delete <strong>' + fullname + '</strong> ?',
                         callback: function(isDelete){
-                            if(isDelete){
+                            if (isDelete) {
                                 $.ajax({
                                     method: 'POST',
                                     data: {
-                                        user_id: userId,
-                                        f_name: fname,
-                                        l_name: lname
+                                        id: userId,
+                                        table: 'users'
                                     },
-                                    url: 'database/delete_user.php',
+                                    url: 'database/delete.php',
                                     dataType: 'json',
-                                    success: function(data){
-                                        if(data.success){
-                                            BootstrapDialog.alert({
-                                                type: BootstrapDialog.TYPE_SUCCESS,
-                                                message: data.message,
-                                                callback: function(){
-                                                    location.reload();
-                                                }
-                                            });
-                                        }else{
-                                            BootstrapDialog.alert({
-                                                type: BootstrapDialog.TYPE_DANGER,
-                                                message: data.message
-                                            });
-                                        }
+                                    success: function(data) {
+                                        var message = data.success ? fullname + ' successfully deleted!' : 'Error Processing Your Request.';
+
+                                        BootstrapDialog.alert({
+                                            type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
+                                            message: message,
+                                            callback: function() {
+                                                if (data.success) location.reload();
+                                            }
+                                        });
+                                    },
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                        BootstrapDialog.alert({
+                                            type: BootstrapDialog.TYPE_DANGER,
+                                            message: 'An error occurred: ' + textStatus
+                                        });
                                     }
                                 });
                             }

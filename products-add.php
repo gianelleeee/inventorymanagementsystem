@@ -6,16 +6,16 @@
         exit();
     }
 
-    $_SESSION['table'] = 'users';
-    $_SESSION['redirect_to'] = 'users.add.php';
+    $_SESSION['table'] = 'products';
+    $_SESSION['redirect_to'] = 'products-add.php';
+
     $user = $_SESSION['user'];
-    $users = include('database/show.php');
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IMS Add Users</title>
+    <title>IMS Add Product</title>
 
     <?php include('partials/header-script.php'); ?>
     </head>
@@ -28,28 +28,20 @@
                 <div class="dashboard_content_main">
                     <div class="row">
                         <div class="column column-12">
-                            <h1 class="section_header"> <i class="fa fa-plus"></i> Create User</h1>
+                            <h1 class="section_header"> <i class="fa fa-plus"></i> Add Product</h1>
                             
                                 <div id="userAddFormContainer">
                                     <form action="database/add.php" method="POST" class="appForm" id="userAddForm">
                                         <div class="appFormInputContainer">
-                                            <label for="first_name">First Name</label>
-                                            <input type="text" class="appFormInput" name="first_name" id="first_name" required>
+                                            <label for="product_name">Product Name</label>
+                                            <input type="text" class="appFormInput" name="product_name" placeholder="Enter product name..." id="product_name" required>
                                         </div>
                                         <div class="appFormInputContainer">
-                                            <label for="last_name">Last Name</label>
-                                            <input type="text" class="appFormInput" name="last_name" id="last_name" required>
+                                            <label for="description">Description</label>
+                                            <textarea class="appFormInput productTextAreaInput" name="description" placeholder="Enter product description..." id="description"></textarea>
+                                     
                                         </div>
-                                        <div class="appFormInputContainer">
-                                            <label for="email">Email</label>
-                                            <input type="email" class="appFormInput" name="email" id="email" required>
-                                        </div>
-                                        <div class="appFormInputContainer">
-                                            <label for="password">Password</label>
-                                            <input type="password" class="appFormInput" name="password" id="password" required>
-                                        </div>
-                                        <input type="hidden" name="table" value="users">
-                                        <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add User</button>
+                                        <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add Product</button>
                                     </form>
                                     <?php if (isset($_SESSION['response'])) { 
                                         $response_message = $_SESSION['response']['message'];
