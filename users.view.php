@@ -6,7 +6,7 @@
         exit();
     }
 
-    $_SESSION['table'] = 'users';
+    $show_table = 'users';
     $user = $_SESSION['user'];
     $users = include('database/show.php');
 ?>

@@ -6,7 +6,7 @@ $table_columns_mapping = [
     ],
 
     'products' => [
-        'product_name', 'description', 'created_by', 'created_at', 'updated_at'
+        'product_name', 'description', 'created_by', 'created_at', 'updated_at', 
     ]
 
 ];

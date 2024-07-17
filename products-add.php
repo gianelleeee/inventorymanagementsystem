@@ -40,6 +40,20 @@
                                             <label for="description">Description</label>
                                             <textarea class="appFormInput productTextAreaInput" name="description" placeholder="Enter product description..." id="description"></textarea>
                                         </div>
+                                        <div class="appFormInputContainer">
+                                            <label for="description">Category</label>
+                                            <select name="category[]" id="categorySelect" multiple="">
+                                                <option value="">Select Category</option>
+                                                <?php
+                                                    $show_table = 'category';
+                                                    $category = include('database/show.php');
+
+                                                    foreach($category as $category){
+                                                        echo "<option value=' ". $category['id'] ."'> ".$category['category_name'] ."</option>";
+                                                    }
+                                                ?>
+                                            </select>
+                                        </div>
                                         <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add Product</button>
                                     </form>
                                     <?php if (isset($_SESSION['response'])) { 
