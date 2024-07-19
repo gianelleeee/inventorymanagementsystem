@@ -6,8 +6,8 @@
         exit();
     }
 
-    $_SESSION['table'] = 'products';
-    $_SESSION['redirect_to'] = 'products-add.php';
+    $_SESSION['table'] = 'category';
+    $_SESSION['redirect_to'] = 'sku-add.php';
 
     $user = $_SESSION['user'];
 ?>
@@ -15,7 +15,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>IMS Add Product</title>
+    <title>IMS Add Category</title>
 
     <?php include('partials/header-script.php'); ?>
     </head>
@@ -28,33 +28,15 @@
                 <div class="dashboard_content_main">
                     <div class="row">
                         <div class="column column-12">
-                            <h1 class="section_header"> <i class="fa fa-plus"></i> Add Product</h1>
+                            <h1 class="section_header"> <i class="fa fa-plus"></i> Add Category</h1>
                             
                                 <div id="userAddFormContainer">
                                     <form action="database/add.php" method="POST" class="appForm" id="userAddForm">
                                         <div class="appFormInputContainer">
-                                            <label for="product_name">Product Name</label>
-                                            <input type="text" class="appFormInput" name="product_name" placeholder="Enter product name..." id="product_name" required>
+                                            <label for="category_name">Category Name</label>
+                                            <input type="text" class="appFormInput" name="category_name" placeholder="Enter category name..." id="category_name" required>
                                         </div>
-                                        <div class="appFormInputContainer">
-                                            <label for="description">Description</label>
-                                            <textarea class="appFormInput productTextAreaInput" name="description" placeholder="Enter product description..." id="description"></textarea>
-                                        </div>
-                                        <div class="appFormInputContainer">
-                                            <label for="description">Category</label>
-                                            <select name="category[]" id="categorySelect" multiple="" required>
-                                                <option value="">Select Category</option>
-                                                <?php
-                                                    $show_table = 'category';
-                                                    $category = include('database/show.php');
-
-                                                    foreach($category as $category){
-                                                        echo "<option value=' ". $category['id'] ."'> ".$category['category_name'] ."</option>";
-                                                    }
-                                                ?>
-                                            </select>
-                                        </div>
-                                        <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add Product</button>
+                                        <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add Category</button>
                                     </form>
                                     <?php if (isset($_SESSION['response'])) { 
                                         $response_message = $_SESSION['response']['message'];

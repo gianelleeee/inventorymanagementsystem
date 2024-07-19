@@ -162,19 +162,20 @@ $category_arr_json = json_encode($category_arr);
                 showEditDialog(pId);
             });
     
-            // Function to show edit dialog
-            function showEditDialog(id) {
-                $.get('database/get-product.php', {id: id}, function (productDetails) {
-                    let curCategory = productDetails['category'];
+              // Function to show edit dialog
+              function showEditDialog(id) {
+                $.get('database/get-product.php', { id: id }, function (productDetails) {
+                    let curCategory = productDetails['category']; // Array of selected category IDs
                     let categoryOption = '';
-    
-                    for (const [catId, catName] of Object.entries(categoryList)){
-                        let selected = curCategory.indexOf(catId.toString()) > -1 ? 'selected' : '';
-                        categoryOption += "<option "+ selected +" value='"+ catId +"'>"+ catName +"</option>";
+
+                    for (const [catId, catName] of Object.entries(categoryList)) {
+                        // Check if the category ID is in the list of selected categories
+                        let selected = curCategory.includes(parseInt(catId)) ? 'selected' : '';
+                        categoryOption += `<option ${selected} value='${catId}'>${catName}</option>`;
                     }
-    
+
                     BootstrapDialog.confirm({
-                        title: 'Update <strong>' + productDetails.product_name + '</strong>',
+                        title: `Update <strong>${productDetails.product_name}</strong>`,
                         message: `<form id="editProductForm">\
                             <div class="appFormInputContainer">\
                                 <label for="product_name">Product Name</label>\
@@ -185,7 +186,7 @@ $category_arr_json = json_encode($category_arr);
                                 <textarea class="appFormInput productTextAreaInput" name="description" placeholder="Enter product description..." id="description">${productDetails.description}</textarea>\
                             </div>\
                             <div class="appFormInputContainer">\
-                                <label for="description">Category</label>\
+                                <label for="categorySelect">Category</label>\
                                 <select name="category[]" id="categorySelect" multiple="">\
                                     <option value="">Select Category</option>\
                                     ${categoryOption}\
@@ -202,7 +203,7 @@ $category_arr_json = json_encode($category_arr);
                                     url: 'database/update-product.php',
                                     dataType: 'json',
                                     success: function (data) {
-                                        var message = data.success ? data.message : 'Error updating product.';
+                                        const message = data.success ? data.message : 'Error updating product.';
                                         BootstrapDialog.alert({
                                             type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
                                             message: message,
@@ -217,7 +218,7 @@ $category_arr_json = json_encode($category_arr);
                                     error: function (jqXHR, textStatus, errorThrown) {
                                         BootstrapDialog.alert({
                                             type: BootstrapDialog.TYPE_DANGER,
-                                            message: 'An error occurred: ' + textStatus
+                                            message: `An error occurred: ${textStatus}`
                                         });
                                     }
                                 });
@@ -226,7 +227,7 @@ $category_arr_json = json_encode($category_arr);
                     });
                 }, 'json');
             }
-        });
+});
     </script>
 </body>
 </html>

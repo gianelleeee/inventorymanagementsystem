@@ -30,8 +30,8 @@
                             <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
                         </a>
                         <ul class="subMenus">
-                            <li> <a class="subMenuLink" href="#"><i class="fa-regular fa-circle circle"></i> View SKU</a> </li>
-                            <li> <a class="subMenuLink" href="#"><i class="fa-regular fa-circle circle"></i> Add SKU</a> </li>
+                            <li> <a class="subMenuLink" href="./sku-view.php"><i class="fa-regular fa-circle circle"></i> View SKU</a> </li>
+                            <li> <a class="subMenuLink" href="./sku-add.php"><i class="fa-regular fa-circle circle"></i> Add SKU</a> </li>
                         </ul>
                     </li>
                     <li class="liMainMenu">

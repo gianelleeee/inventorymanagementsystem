@@ -7,6 +7,10 @@ $table_columns_mapping = [
 
     'products' => [
         'product_name', 'description', 'created_by', 'created_at', 'updated_at', 
+    ],
+
+    'category' => [
+        'category_name', 'created_by', 'created_at', 'updated_at', 
     ]
 
 ];
