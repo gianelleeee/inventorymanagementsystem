@@ -161,11 +161,11 @@ $products_arr = json_encode($products_arr);
             // Show edit dialog
             function showEditDialog(id) {
                 $.get('database/get-sku.php', { id: id }, function (categoryDetails) {
-                    let curProducts = categoryDetails['products'];
+                    let curProducts = categoryDetails['products'].map(Number); // Ensure curProducts are numbers
                     let productOption = '';
 
                     for (const [pId, pName] of Object.entries(productsList)) {
-                        let selected = curProducts.indexOf(pId.toString()) > -1 ? 'selected' : '';
+                        let selected = curProducts.includes(parseInt(pId)) ? 'selected' : '';
                         productOption += `<option ${selected} value='${pId}'>${pName}</option>`;
                     }
 
@@ -178,8 +178,8 @@ $products_arr = json_encode($products_arr);
                             </div>\
                             <div class="appFormInputContainer">\
                                 <label for="productSelect">Products</label>\
-                                <select name="products[]" id="productSelect" multiple="">\
-                                    <option value="">Select Product</option>\
+                                <select name="products[]" id="productSelect" multiple>\
+                                <option value="">Select Product</option>\
                                     ${productOption}\
                                 </select>\
                             </div>\
@@ -216,6 +216,7 @@ $products_arr = json_encode($products_arr);
             }
         });
     </script>
+
 
 </body>
 </html>

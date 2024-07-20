@@ -21,6 +21,7 @@
                         <ul class="subMenus">
                             <li> <a class="subMenuLink" href="./products-view.php"><i class="fa-regular fa-circle circle"></i> View Product</a> </li>
                             <li> <a class="subMenuLink" href="./products-add.php"><i class="fa-regular fa-circle circle"></i> Add Product</a> </li>
+                            <li> <a class="subMenuLink" href="./products-order.php"><i class="fa-regular fa-circle circle"></i> Order Product</a> </li>
                         </ul>
                     </li>
                     <li class="liMainMenu">

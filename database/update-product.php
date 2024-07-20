@@ -7,10 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $description = $_POST['description'];
         $pid = $_POST['pid'];
 
-
-    
-
-
         // Update product record
         try {
             // Include your database connection
@@ -21,36 +17,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conn->prepare($sql);
             $stmt->execute([$product_name, $description, $pid]);
 
-
-            //delete the old values
+            // Delete the old values
             $sql = "DELETE FROM productscategory WHERE product=?";
             $stmt = $conn->prepare($sql);
             $stmt->execute([$pid]);
 
-            
             // Loop through category and add record
-            
-            //get category
             $category = isset($_POST['category']) ? $_POST['category'] : [];
-            foreach ($category as $category) {
-                $category_data = [
-                    'category_id' => $category,
-                    'product_id' => $pid,
-                    'updated_at' => date('Y-m-d H:i:s'),
-                    'created_at' => date('Y-m-d H:i:s')
-                ];
+            $updated_at = date('Y-m-d H:i:s');
+            $created_at = date('Y-m-d H:i:s');
+
+            foreach ($category as $cat) {
                 $sql = "INSERT INTO productscategory
                             (category, product, updated_at, created_at) 
                         VALUES
                             (:category_id, :product_id, :updated_at, :created_at)";
-    
+                
                 $stmt = $conn->prepare($sql);
-                $stmt->execute($category_data);
+                $stmt->execute([
+                    ':category_id' => $cat,
+                    ':product_id' => $pid,
+                    ':updated_at' => $updated_at,
+                    ':created_at' => $created_at
+                ]);
             }
-            
 
-
-            // Check if update was successful
+            // Check if any rows were affected by the update
             if ($stmt->rowCount() > 0) {
                 $response = [
                     'success' => true,
