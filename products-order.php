@@ -31,17 +31,31 @@
                         <div class="column column-12">
                             <h1 class="section_header"> <i class="fa fa-plus"></i> Order Product</h1>
                                 <div>
-                                    <div class="alignRight">
-                                        <button class="orderBtn orderProductBtn" id="orderProductBtn">Add New Product Order</button>
-                                    </div>
+                                    <form action="database/save-order.php" method="POST">
+                                        <div class="alignRight">
+                                            <button type="button" class="orderBtn orderProductBtn" id="orderProductBtn">Add New Product Order</button>
+                                        </div>
 
-                                    <div id="orderProductLists">
-                                    </div>
-                                        
-                                    <div class="alignRight marginTop20">
-                                        <button class=" orderBtn submitOrderProductBtn">Submit Order</button>
-                                    </div>
+                                        <div id="orderProductLists">
+                                            <p id="noData" style="color: #9f9f9f;">No Products Selected</p>
+                                        </div>
+                                            
+                                        <div class="alignRight marginTop20">
+                                            <button type="submit" class=" orderBtn submitOrderProductBtn">Submit Order</button>
+                                        </div>
+                                    </form>
                                 </div>
+                                <?php 
+                                    if (isset($_SESSION['response'])) { 
+                                        $response_message = $_SESSION['response']['message'];
+                                        $is_success = $_SESSION['response']['success'];
+                                ?>
+                                    <div class="responseMessage">
+                                        <p class="responseMessage<?= $is_success ? 'responseMessage_success' : 'responseMessage_error' ?>">
+                                            <?= $response_message ?>
+                                        </p>
+                                    </div>
+                                <?php unset($_SESSION['response']); } ?>
                         </div>
                     </div>
                 </div>
@@ -60,10 +74,11 @@
 
             this.productOptions = '<div>\
                                         <label for="product_name">PRODUCT NAME</label>\
-                                            <select name="product_name" class="productNameSelect" id="product_name">\
+                                            <select name="products[]" class="productNameSelect" id="product_name">\
                                                 <option value="">Select Product</option>\
                                                 INSERTPRODUCTHERE\
                                             </select> \
+                                                <button class="removeOrderBtn" id="removeOrderBtn">Remove</button>\
                                         </div>';
 
             this.initialize = function() {
@@ -86,6 +101,7 @@
                 document.addEventListener('click', (e) => {
                     var targetElement = e.target;
                     if (targetElement.id === 'orderProductBtn') {
+                        document.getElementById('noData').style.display = 'none';
                         let orderProductListsContainer = document.getElementById('orderProductLists');
 
                         orderProductLists.innerHTML += '\
@@ -97,6 +113,18 @@
                         
                         counter++;
                     }
+
+
+                    //if remove button is clicked
+                    if (targetElement.id === 'removeOrderBtn') {
+                        let orderRow = targetElement.closest('div.orderProductRow');
+
+                        // remove element
+                        if (orderRow) {
+                            orderRow.remove();
+                        }
+                    }
+
                 });
 
                 // Add category row on product options change event
@@ -126,7 +154,7 @@
                             </div>\
                             <div style="width: 50%;">\
                                 <label for="product_name">Quantity</label>\
-                                <input type="number" name="quantity" class="orderProductQty" placeholder="Enter quantity..." id="quantity" required>\
+                                <input type="number" name="quantity['+ counterId +']['+ category.id +']" class="orderProductQty" placeholder="Enter quantity..." id="quantity" required>\
                             </div>\
                         </div>';
 

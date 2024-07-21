@@ -56,9 +56,10 @@
                                         </div>
                                         <button type="submit" class="appBtn"><i class="fa fa-add"></i> Add Product</button>
                                     </form>
-                                    <?php if (isset($_SESSION['response'])) { 
-                                        $response_message = $_SESSION['response']['message'];
-                                        $is_success = $_SESSION['response']['success'];
+                                    <?php 
+                                        if (isset($_SESSION['response'])) { 
+                                            $response_message = $_SESSION['response']['message'];
+                                            $is_success = $_SESSION['response']['success'];
                                     ?>
                                     <div class="responseMessage">
                                         <p class="responseMessage<?= $is_success ? 'responseMessage_success' : 'responseMessage_error' ?>">
