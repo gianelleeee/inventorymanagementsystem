@@ -472,3 +472,64 @@ table td{
 .categoryRows .row{
     padding: 8px 0px;
 }
+
+.poList{
+    margin-bottom: 25px;
+    padding: 15px;
+    border-bottom: solid 1px #d1d1d1;
+    border-radius: 5px;
+    background: #fbfbfb;
+}
+
+.poList p{
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #4d7326;
+    font-size: 16px;
+}
+
+.poList table td, .poList table th{
+    border: none;
+    border-bottom: 1px dotted #b7b7b7;
+}
+
+.poList table td{
+    padding: 13px 14px;
+    font-size: 14px;
+}
+
+.poList table th{
+    padding: 15px 10px;
+}
+
+.poList table{
+    border: none;
+}
+
+.updatePoBtn{
+    color: #22a853;
+    background: #fff;
+    border: 1px solid #22a853;
+    margin-top: 15px;
+}
+
+.updatePoBtn:hover{
+    background: #22a853;
+    color: #fff;
+}
+
+.po-badge{
+    padding: 4px 6px;
+    border: 1px solid;
+}
+
+
+.po-badge-Pending{
+    background: #ff7c76;
+    border-color: #556455;
+}
+
+.po-badge-Complete{
+    background: #b5ebb5;
+    border-color: green;
+}

@@ -21,7 +21,6 @@
                         <ul class="subMenus">
                             <li> <a class="subMenuLink" href="./products-view.php"><i class="fa-regular fa-circle circle"></i> View Product</a> </li>
                             <li> <a class="subMenuLink" href="./products-add.php"><i class="fa-regular fa-circle circle"></i> Add Product</a> </li>
-                            <li> <a class="subMenuLink" href="./products-order.php"><i class="fa-regular fa-circle circle"></i> Order Product</a> </li>
                         </ul>
                     </li>
                     <li class="liMainMenu">
@@ -33,6 +32,17 @@
                         <ul class="subMenus">
                             <li> <a class="subMenuLink" href="./sku-view.php"><i class="fa-regular fa-circle circle"></i> View SKU</a> </li>
                             <li> <a class="subMenuLink" href="./sku-add.php"><i class="fa-regular fa-circle circle"></i> Add SKU</a> </li>
+                        </ul>
+                    </li>
+                    <li class="liMainMenu">
+                        <a href="javascript:void(0);" class="showHideSubMenu">
+                            <i class="fa fa-cart-shopping showHideSubMenu"></i> 
+                            <span class="menuText showHideSubMenu"> Order Management</span>
+                            <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
+                        </a>
+                        <ul class="subMenus">
+                            <li> <a class="subMenuLink" href="./view-order.php"><i class="fa-regular fa-circle circle"></i> View Orders</a> </li>
+                            <li> <a class="subMenuLink" href="./products-order.php"><i class="fa-regular fa-circle circle"></i> Add Order</a> </li>
                         </ul>
                     </li>
                     <li class="liMainMenu">
