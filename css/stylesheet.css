@@ -524,12 +524,25 @@ table td{
 }
 
 
-.po-badge-Pending{
+.po-badge-pending{
     background: #ff7c76;
     border-color: #556455;
+    text-transform: capitalize;
 }
 
-.po-badge-Complete{
+.po-badge-complete{
     background: #b5ebb5;
     border-color: green;
+    text-transform: capitalize;
+}
+
+.po-badge-incomplete{
+    background: #f7e640;
+    color: #392b2b;
+    border-color: #a3a3a3;
+    text-transform: capitalize;
+}
+
+.alignLeft{
+    text-align: left;
 }

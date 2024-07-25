@@ -28,7 +28,7 @@ try {
                 'category' => $cid,
                 'product' => $pid,
                 'quantity_ordered' => $qty,
-                'status' => 'ORDERED',
+                'status' => 'Pending',
                 'batch' => $batch,
                 'created_by' => $_SESSION['user']['id'],
                 'updated_at' => date('Y-m-d H:i:s'),
