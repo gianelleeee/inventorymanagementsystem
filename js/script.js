@@ -92,3 +92,4 @@ let mainMenuIcon = mainNav.querySelector('i.mainMenuIconArrow');
 
 // Call function to hide/show submenu
 showHideSubMenu(subMenu, mainMenuIcon);
+

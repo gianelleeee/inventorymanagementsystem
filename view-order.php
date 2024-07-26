@@ -18,6 +18,7 @@ $user = $_SESSION['user'];
     <title>IMS View Purchase History</title>
     <?php include('partials/header-script.php'); ?>
 </head>
+
 <body>
     <div id="dashboardMainContainer">
         <?php include('partials/sidebar.php'); ?>
@@ -154,6 +155,7 @@ $user = $_SESSION['user'];
                                     <th>Product Name</th>\
                                     <th>Quantity Ordered</th>\
                                     <th>Quantity Received</th>\
+                                    <th>Quantity Delivered</th>\
                                     <th>Category</th>\
                                     <th>Status</th>\
                                 </tr>\
@@ -166,7 +168,8 @@ $user = $_SESSION['user'];
                                     <tr>\
                                         <td class="po_product alignLeft">'+ poList.name +'</td>\
                                         <td class="po_qty_ordered">'+ poList.qtyOrdered +'</td>\
-                                        <td class="po_qty_received"><input type="number" value="'+ poList.qtyReceived +'"/></td>\
+                                        <td class="po_qty_received">'+ poList.qtyReceived +'</td>\
+                                        <td class="po_qty_delivered"><input type="number" value="0"/></td>\
                                         <td class="po_category alignLeft">'+ poList.category +'</td>\
                                         <td>\
                                             <select class="po_status">\
@@ -192,16 +195,18 @@ $user = $_SESSION['user'];
                                 if(toAdd){
                                     formTableContainer = 'formTable_' + batchNumber;
                                     //get all purchase order product records
-                                    qtyReceivedList = document.querySelectorAll('#' + formTableContainer + ' .po_qty_received input');
+                                    qtyReceivedList = document.querySelectorAll('#' + formTableContainer + ' .po_qty_received');
+                                    qtyDeliveredList = document.querySelectorAll('#' + formTableContainer + ' .po_qty_delivered input');
                                     statusList = document.querySelectorAll('#' + formTableContainer + ' .po_status');
-                                    qtyReceivedList = document.querySelectorAll('#' + formTableContainer + ' .po_qty_received input');
+                                    rowIds = document.querySelectorAll('#' + formTableContainer + ' .po_qty_row_id');
                                     qtyOrdered = document.querySelectorAll('#' + formTableContainer + ' .po_qty_ordered');
 
                                     poListArrForm =[];
 
-                                    for(i=0;i<qtyReceivedList.length;i++){
+                                    for(i=0;i<qtyDeliveredList.length;i++){
                                         poListArrForm.push({
-                                            qtyReceived: qtyReceivedList[i].value,
+                                            qtyReceived: qtyReceivedList[i].innerText,
+                                            qtyDelivered: qtyDeliveredList[i].value,
                                             status: statusList[i].value,
                                             id: rowIds[i].value,
                                             qtyOrdered: qtyOrdered[i].innerText

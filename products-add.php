@@ -42,7 +42,7 @@
                                         </div>
                                         <div class="appFormInputContainer">
                                             <label for="description">Category</label>
-                                            <select name="category[]" id="categorySelect" multiple="" required>
+                                            <select name="category[]" id="categorySelect" multiple required>
                                                 <option value="">Select Category</option>
                                                 <?php
                                                     $show_table = 'category';

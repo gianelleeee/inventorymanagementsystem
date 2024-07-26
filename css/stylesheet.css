@@ -316,12 +316,13 @@ table th{
     text-transform: uppercase;
     text-align: center;
     background: #f4f6f9;
+    padding: 10px;
 }
 
 table td{
     font-size: 15px;
     text-align: center;
-    padding: 5px;
+    padding: 10px;
 }
 
 .product_count{
@@ -546,3 +547,7 @@ table td{
 .alignLeft{
     text-align: left;
 }
+/* 
+.modal-content{
+    width: fit-content;
+} */
