@@ -547,7 +547,7 @@ table td{
 .alignLeft{
     text-align: left;
 }
-/* 
+
 .modal-content{
-    width: fit-content;
-} */
+    width: 800px;
+}
