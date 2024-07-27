@@ -45,6 +45,7 @@ $category_arr_json = json_encode($category_arr);
                                             <tr>
                                                 <th>#</th>
                                                 <th>Product Name</th>
+                                                <th>Stock</th>
                                                 <th>Description</th>
                                                 <th width=10%>Category</th>
                                                 <th>Created By</th>
@@ -58,6 +59,7 @@ $category_arr_json = json_encode($category_arr);
                                                 <tr>
                                                     <td><?= $index + 1 ?></td>
                                                     <td class="productName"><?= $product['product_name'] ?></td>
+                                                    <td class="productName"><?= number_format($product['stock']) ?></td>
                                                     <td class="productDescription"><?= $product['description'] ?></td>
                                                     <td class="productCategory">
                                                         <?php

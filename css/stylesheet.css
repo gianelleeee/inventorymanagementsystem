@@ -530,6 +530,11 @@ table td{
     border-color: #556455;
     text-transform: capitalize;
 }
+.po-badge-Pending{
+    background: #ff7c76;
+    border-color: #556455;
+    text-transform: capitalize;
+}
 
 .po-badge-complete{
     background: #b5ebb5;
@@ -550,4 +555,32 @@ table td{
 
 .modal-content{
     width: 800px;
+}
+
+.deleteProduct{
+    display: block;
+}
+
+.deleteCategory{
+    display: block;
+}
+
+.appDeliveryHistoryBtn:hover{
+    background: #ff5722;
+    color: white;
+    margin-top: 0px;
+    border: 1px solid #a5a5a5;
+    padding: 6px 6px;
+}
+
+.appDeliveryHistoryBtn{
+    margin-top: 0px;
+    border: 1px solid #ff5722;
+    padding: 6px 6px;
+    background: none;
+}
+
+.deliveryHistoryTable th{
+    font-size: 14px;
+    padding: 10px 20px;
 }

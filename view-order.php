@@ -33,7 +33,7 @@ $user = $_SESSION['user'];
                                 <div class="poListContainers">
                                     <div class="poList">
                                         <?php
-                                            $stmt = $conn->prepare("SELECT order_product.id, products.product_name, order_product.quantity_ordered, order_product.quantity_received, users.first_name, users.last_name, category.category_name, order_product.status, order_product.created_at, order_product.batch
+                                            $stmt = $conn->prepare("SELECT order_product.id, order_product.product, products.product_name, order_product.quantity_ordered, order_product.quantity_received, users.first_name, users.last_name, category.category_name, order_product.status, order_product.created_at, order_product.batch
                                                 FROM order_product, category, products, users 
                                                 WHERE 
                                                     order_product.category = category.id 
@@ -68,6 +68,7 @@ $user = $_SESSION['user'];
                                                         <th>Status</th>
                                                         <th>ordered by</th>
                                                         <th>Created Date</th>
+                                                        <th>Delivery History</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -85,6 +86,10 @@ $user = $_SESSION['user'];
                                                         <td>
                                                             <?= $batch_po['created_at']?>
                                                             <input type="hidden" class="po_qty_row_id" value="<?= $batch_po['id']?>">
+                                                            <input type="hidden" class="po_qty_productid" value="<?= $batch_po['product']?>">
+                                                        </td>
+                                                        <td>
+                                                            <button class="appDeliveryHistoryBtn" data-id="<?= $batch_po['id']?>">Delivery History</button>
                                                         </td>
                                                     </tr>
                                                     <?php } ?>
@@ -133,6 +138,7 @@ $user = $_SESSION['user'];
                     categoryList = document.querySelectorAll('#' + batchNumberContainer + ' .po_category');
                     statusList = document.querySelectorAll('#' + batchNumberContainer + ' .po_status');
                     rowIds = document.querySelectorAll('#' + batchNumberContainer + ' .po_qty_row_id');
+                    pIds = document.querySelectorAll('#' + batchNumberContainer + ' .po_qty_productid');
 
                     poListArr =[];
 
@@ -143,7 +149,8 @@ $user = $_SESSION['user'];
                             qtyReceived: qtyReceivedList[i].innerText,
                             category: categoryList[i].innerText,
                             status: statusList[i].innerText,
-                            id: rowIds[i].value
+                            id: rowIds[i].value,
+                            pid: pIds[i].value
                         });
                     }
 
@@ -178,6 +185,7 @@ $user = $_SESSION['user'];
                                                 <option value="complete" '+ (poList.status == 'complete' ? 'selected' : '') +'>Complete</option>\
                                             </select>\
                                             <input type="hidden" class="po_qty_row_id" value="'+ poList.id +'">\
+                                            <input type="hidden" class="po_qty_pid" value="'+ poList.pid +'">\
                                         </td>\
                                     </tr>\
                                 ';
@@ -200,6 +208,7 @@ $user = $_SESSION['user'];
                                     statusList = document.querySelectorAll('#' + formTableContainer + ' .po_status');
                                     rowIds = document.querySelectorAll('#' + formTableContainer + ' .po_qty_row_id');
                                     qtyOrdered = document.querySelectorAll('#' + formTableContainer + ' .po_qty_ordered');
+                                    pids = document.querySelectorAll('#' + formTableContainer + ' .po_qty_pid');
 
                                     poListArrForm =[];
 
@@ -209,7 +218,8 @@ $user = $_SESSION['user'];
                                             qtyDelivered: qtyDeliveredList[i].value,
                                             status: statusList[i].value,
                                             id: rowIds[i].value,
-                                            qtyOrdered: qtyOrdered[i].innerText
+                                            qtyOrdered: qtyOrdered[i].innerText,
+                                            pid: pids[i].value
                                         });
                                     }
 
@@ -248,7 +258,54 @@ $user = $_SESSION['user'];
 
 
                 }
-            })
+
+                //if delivery history button is clicked
+                if(classList.contains('appDeliveryHistoryBtn')){
+                    let id = targetElement.dataset.id;
+
+                    $.get('database/view-delivery-history.php', {id: id}, function(data){
+                        if(data.length){
+                            rows = '';
+                            data.forEach((row, id) => {
+                                rows += '\
+                                <tr>\
+                                        <td>'+ (id + 1) +'</td>\
+                                        <td>'+ (new Date(row['date_received'])).toDateString() +'</td>\
+                                        <td>'+ row['qty_received'] +'</td>\
+                                    </tr>\
+                            ';
+                            });
+
+                            deliveryHistoryHtml = '<table class="deliveryHistoryTable">\
+                                <thead>\
+                                    <tr>\
+                                        <th>#</th>\
+                                        <th>Date Received</th>\
+                                        <th>Quantity Delivered</th>\
+                                    </tr>\
+                                </thead>\
+                                <tbody>'+ rows+'</tbody>\
+                            </table>\
+                            ';
+
+
+
+
+                            BootstrapDialog.show({
+                                title: '<strong>Delivery History</strong>',
+                                type: BootstrapDialog.TYPE_PRIMARY,
+                                message: deliveryHistoryHtml
+                            })
+                        } else{
+                            BootstrapDialog.alert({
+                                title: '<strong>No Delivery History</strong>',
+                                type: BootstrapDialog.TYPE_INFO,
+                                message: 'No Delivery History Found on Selected Product!'
+                            });
+                        }
+                    }, 'json');
+                }
+            });
         },
 
         this.saveUpdatedData = function() {
