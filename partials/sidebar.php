@@ -52,8 +52,8 @@
                             <i class="fa fa-angle-left mainMenuIconArrow showHideSubMenu"></i>
                         </a>
                         <ul class="subMenus">
-                            <li> <a class="subMenuLink" href="#"><i class="fa-regular fa-circle circle"></i> View Sales</a> </li>
-                            <li> <a class="subMenuLink" href="#"><i class="fa-regular fa-circle circle"></i> Add Sales</a> </li>
+                            <li> <a class="subMenuLink" href="./view-sales.php"><i class="fa-regular fa-circle circle"></i> View Sales</a> </li>
+                            <li> <a class="subMenuLink" href="./product-sales.php"><i class="fa-regular fa-circle circle"></i> Add Sales</a> </li>
                         </ul>
                     </li>
                     <li class="liMainMenu showHideSubMenu">

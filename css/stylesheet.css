@@ -397,19 +397,19 @@ table td{
 }
 
 
-.orderProductBtn{
+.orderProductBtn, .salesProductBtn{
     background: #4d7326;
     color: #fff;
 }
 
-.submitOrderProductBtn{
+.submitOrderProductBtn, .submitSalesProductBtn{
     background: #323232;
     color: #ffffff;
     font-weight: bold;
     padding: 8px 9px;
 }
 
-.orderBtn{
+.orderBtn, .salesBtn{
     height: 33px;
     border: none;
     padding: 2px 10px;
@@ -417,7 +417,7 @@ table td{
     font-size: 16px;
 }
 
-.removeOrderBtn{
+.removeOrderBtn, .removeSalesBtn{
     background: #ff5858;
     color: #fff;
     border: none;
@@ -442,14 +442,22 @@ table td{
     border-radius: 2px;
 }
 
-.orderProductRow{
+.dateSelect{
+    border: none;
+    background: #fafafa;
+    padding: 1px 15px;
+    border: 1px solid #b0b0b0;
+    border-radius: 2px;
+}
+
+.orderProductRow, .salesProductRow{
     padding: 6px;
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 25px;
     padding-top: 15px;
 }
 
-.orderProductQty{
+.orderProductQty, .salesProductQty{
     height: 27px;
     border: none;
     background: #f8f8f8;
@@ -583,4 +591,63 @@ table td{
 .deliveryHistoryTable th{
     font-size: 14px;
     padding: 10px 20px;
+}
+
+.removeSalesBtn{
+    background: #ff5858;
+    color: #fff;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 2px;
+    float: right;
+}
+
+.salesProductBtn{
+    background: #4d7326;
+    color: #fff;
+}
+
+.submitSalesProductBtn{
+    background: #323232;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 9px 9px;
+    border-radius: 5px;
+}
+
+.salesDate{
+    margin-bottom: 20px;
+}
+
+
+
+
+
+
+
+
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+    
 }
