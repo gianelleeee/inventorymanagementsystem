@@ -64,7 +64,7 @@
                         </a>
                         <ul class="subMenus">
                             <li> <a class="subMenuLink" href="./users.view.php"><i class="fa-regular fa-circle circle"></i> View Users</a> </li>
-                            <li> <a class="subMenuLink" href="./users.add.php"><i class="fa-regular fa-circle circle"></i> Add Users</a> </li>
+                            <!-- <li> <a class="subMenuLink" href="./users.add.php"><i class="fa-regular fa-circle circle"></i> Add Users</a> </li> -->
                         </ul>
                     </li>
                    

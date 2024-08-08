@@ -86,6 +86,9 @@ $user = $_SESSION['user'];
                                                     <?php } ?>
                                                 </tbody>
                                             </table>
+                                            <!-- <div class="soSalesUpdateBtnContainer alignRight">
+                                                <button class="orderBtn updateSoBtn" data-id="<?= $batch_id?>">Update</button>
+                                            </div> -->
                                         </div>
                                         <?php } ?>
                                     </div>
