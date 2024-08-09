@@ -7,7 +7,7 @@
     }
     $user = $_SESSION['user'];
 
-    //get all products
+    // Get all products
     $show_table = 'products';
     $products = include('database/show.php');
     $products = json_encode($products);
@@ -17,9 +17,8 @@
 <html>
 <head>
     <title>IMS Order Product</title>
-
     <?php include('partials/header-script.php'); ?>
-    </head>
+</head>
 <body>
     <div id="dashboardMainContainer">
         <?php include('partials/sidebar.php'); ?>
@@ -41,7 +40,7 @@
                                         </div>
                                             
                                         <div class="alignRight marginTop20">
-                                            <button type="submit" class=" orderBtn submitOrderProductBtn">Submit Order</button>
+                                            <button type="submit" class="orderBtn submitOrderProductBtn">Submit Order</button>
                                         </div>
                                     </form>
                                 </div>
@@ -78,7 +77,7 @@
                                                 <option value="">Select Product</option>\
                                                 INSERTPRODUCTHERE\
                                             </select> \
-                                                <button class="removeOrderBtn" id="removeOrderBtn">Remove</button>\
+                                                <button type="button" class="removeOrderBtn" id="removeOrderBtn">Remove</button>\
                                         </div>';
 
             this.initialize = function() {
@@ -92,39 +91,38 @@
                     optionHtml += '<option value="'+ product.id+'">'+ product.product_name +'</option>';
                 });
 
+                // Replace the placeholder with the actual options
                 this.productOptions = this.productOptions.replace('INSERTPRODUCTHERE', optionHtml);
             };
 
-            
             this.registerEvents = function() {
-                //add new product order event
+                // Add new product order event
                 document.addEventListener('click', (e) => {
                     var targetElement = e.target;
                     if (targetElement.id === 'orderProductBtn') {
                         document.getElementById('noData').style.display = 'none';
                         let orderProductListsContainer = document.getElementById('orderProductLists');
 
-                        orderProductLists.innerHTML += '\
+                        // Add new product order row without clearing the existing ones
+                        orderProductListsContainer.insertAdjacentHTML('beforeend', '\
                             <div class="orderProductRow">\
                                 '+ this.productOptions +'\
                                 <div class="categoryRows" id="categoryRows_'+ counter+'" data-counter="'+ counter +'"></div>\
-                            </div>';
+                            </div>');
 
-                        
                         counter++;
                     }
 
-
-                    //if remove button is clicked
+                    // Remove button clicked
                     if (targetElement.id === 'removeOrderBtn') {
                         let orderRow = targetElement.closest('div.orderProductRow');
-
-                        // remove element
                         if (orderRow) {
                             orderRow.remove();
+                            if (orderProductListsContainer.children.length === 0) {
+                                document.getElementById('noData').style.display = 'block';
+                            }
                         }
                     }
-
                 });
 
                 // Add category row on product options change event
@@ -133,12 +131,11 @@
                     if (targetElement.classList.contains('productNameSelect')) {
                         let pid = targetElement.value;
 
-                        
                         let counterId = targetElement.closest('div.orderProductRow').querySelector('.categoryRows').dataset.counter;
 
-                            $.get('database/get-product-sku.php', {id: pid}, function(category){
-                                vm.renderCategoryRows(category, counterId);
-                            }, 'json');
+                        $.get('database/get-product-sku.php', {id: pid}, function(category){
+                            vm.renderCategoryRows(category, counterId);
+                        }, 'json');
                     }
                 });
             },
@@ -146,21 +143,20 @@
             this.renderCategoryRows = function(category, counterId){
                 let categoryRows = '';
 
-                category.forEach((category)=> {
+                category.forEach((category) => {
                     categoryRows += '\
                         <div class="row">\
                             <div style="width: 50%;">\
-                                <p class="categoryName">'+ category.category_name+'</p>\
+                                <p class="categoryName">'+ category.category_name +'</p>\
                             </div>\
                             <div style="width: 50%;">\
-                                <label for="product_name">Quantity</label>\
-                                <input type="number" name="quantity['+ counterId +']['+ category.id +']" class="orderProductQty" placeholder="Enter quantity..." id="quantity" required>\
+                                <label for="quantity_'+ counterId +'">Quantity</label>\
+                                <input type="number" name="quantity['+ counterId +']['+ category.id +']" class="orderProductQty" placeholder="Enter quantity..." id="quantity_'+ counterId +'" required>\
                             </div>\
                         </div>';
-
                 });
 
-                //append to container
+                // Append to the container
                 let supplierRowContainer = document.getElementById('categoryRows_' + counterId);
                 supplierRowContainer.innerHTML = categoryRows;
             }
@@ -168,7 +164,5 @@
 
         (new Script()).initialize();
     </script>
-
-
 </body>
 </html>
