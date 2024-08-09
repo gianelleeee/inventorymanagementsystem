@@ -109,11 +109,18 @@ ul {
 .dashboard_sidebar{
     width: 20%;
     background: #323232;
+    position: fixed; /* Keeps the sidebar in place while scrolling */
+    top: 0; /* Aligns the sidebar to the top */
+    left: 0; /* Aligns the sidebar to the left */
+    height: 100vh; /* Full height of the viewport */
+    overflow-y: auto; /* Allows vertical scrolling if content overflows */
+    z-index: 1000; /* Ensures the sidebar stays above other content */
 }
 
 .dashboard_content_container{
     width: 80%;
     background: #f4f6f9;
+    margin-left: 20%;
 }
 
 .dashboard_logo{
@@ -156,7 +163,7 @@ ul.dashboard_menu_lists{
 }
 
 ul.dashboard_menu_lists li.liMainMenu{
-    padding-top: 15px;
+    padding-top: 5px;
     font-size: 18px;
     text-transform: uppercase;
 }
@@ -169,6 +176,7 @@ ul.dashboard_menu_lists li.liMainMenu a{
     padding: 0px 15px;
     padding-right: 5px;
     padding-bottom: 15px;
+    padding-top: 5px;
 }
 
 ul.dashboard_menu_lists li.liMainMenu a i{
@@ -187,20 +195,27 @@ ul.dashboard_menu_lists li.menuActive{
     color: #ffff;
 }
 
-.dashboard_topNav{
+.dashboard_topNav {
     background: #ffff;
     padding: 20px;
+    position: fixed;
+    top: 0; /* Aligns the top navigation to the top of the viewport */
+    left: 20%; /* Aligns the top navigation to the right of the sidebar */
+    width: 80%; /* Matches the width of the content container */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better visibility */
+    z-index: 1001; /* Ensures the top navigation stays above other content */
 }
 
-.dashboard_topNav a{
+.dashboard_topNav a {
     color: #848383;
     font-size: 18px;
     text-decoration: none;
 }
 
-#logoutBtn{
+#logoutBtn {
     float: right;
 }
+
 
 .dashboard_content{
     padding: 50px 10px 10px 10px;
@@ -392,11 +407,13 @@ table td{
     font-size: 15px;
 }
 
-.subMenuActive{
-    font-weight: bold;
-    border-top: 2px solid white;
-    border-bottom: 2px solid white;
-    background: #4d7326;
+.subMenuActive {
+    font-weight: bold !important;
+    border-top: 2px solid white !important;
+    border-bottom: 2px solid white !important;
+    background: #4d7326 !important;
+    padding-top: 15px !important;
+    margin-top: -3px !important;
 }
 
 .productTextAreaInput{
@@ -647,33 +664,289 @@ table td{
     margin-bottom: 20px;
 }
 
+.highcharts-figure,
+.highcharts-data-table table {
+    min-width: 320px;
+    max-width: 800px;
+    margin: 1em auto;
+}
+
+.highcharts-data-table table {
+    font-family: Verdana, sans-serif;
+    border-collapse: collapse;
+    border: 1px solid #ebebeb;
+    margin: 10px auto;
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+.highcharts-data-table caption {
+    padding: 1em 0;
+    font-size: 1.2em;
+    color: #555;
+}
+
+.highcharts-data-table th {
+    font-weight: 600;
+    padding: 0.5em;
+}
+
+.highcharts-data-table td,
+.highcharts-data-table th,
+.highcharts-data-table caption {
+    padding: 0.5em;
+}
+
+.highcharts-data-table thead tr,
+.highcharts-data-table tr:nth-child(even) {
+    background: #f8f8f8;
+}
+
+.highcharts-data-table tr:hover {
+    background: #f1f7ff;
+}
+
+input[type="number"] {
+    min-width: 50px;
+}
+
+/* Chart Container Styling */
+figure.highcharts-figure {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+}
+
+#container {
+    width: 100%;
+    height: 400px;
+    margin: 0 auto;
+}
+
+#salesCategoryChart {
+    width: 100%;
+    height: 400px;
+    margin: 20px 0;
+}
+
+/* Highcharts Pie Chart Styles */
+.highcharts-figure .highcharts-title {
+    font-size: 20px;
+    color: #333;
+    font-weight: bold;
+}
+
+.highcharts-figure .highcharts-tooltip {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.highcharts-figure .highcharts-data-labels {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Chart.js Line Chart Styles */
+#salesCategoryChart {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#salesCategoryChart canvas {
+    max-width: 100%;
+}
 
 
 
 
 
+
+/* Existing CSS */
 
 /* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
+    .dashboard_sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-bottom: 20px;
+    }
 
+    .dashboard_content_container {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .dashboard_topNav {
+        left: 0;
+        width: 100%;
+        box-shadow: none;
+    }
+
+    .loginBody form, .registerBody form {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .loginHeader h1 {
+        font-size: 60px;
+    }
+
+    .loginHeader p {
+        font-size: 40px;
+    }
+
+    .loginInputsContainer input {
+        font-size: 16px;
+    }
+
+    .loginButtonContainer button {
+        font-size: 16px;
+        padding: 8px 20px;
+    }
+
+    .dashboard_content {
+        padding: 20px;
+    }
+
+    .dashboard_content_main {
+        padding-left: 10px;
+    }
+
+    .appForm {
+        width: 100%;
+    }
+
+    .product_count, .user_count {
+        font-size: 14px;
+    }
+
+    .appBtn {
+        padding: 8px;
+    }
+
+    .orderProductRow, .salesProductRow {
+        padding: 8px;
+    }
+
+    .orderProductQty, .salesProductQty {
+        height: 25px;
+    }
+
+    .poList {
+        padding: 10px;
+    }
+
+    .poList table td, .poList table th {
+        padding: 8px;
+    }
+
+    .highcharts-figure {
+        max-width: 100%;
+    }
+
+    #container, #salesCategoryChart {
+        height: 300px;
+    }
 }
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {
+@media only screen and (min-width: 600px) and (max-width: 768px) {
+    .dashboard_sidebar {
+        width: 30%;
+    }
 
+    .dashboard_content_container {
+        width: 70%;
+        margin-left: 30%;
+    }
+
+    .loginBody form, .registerBody form {
+        width: 80%;
+    }
+
+    .loginHeader h1 {
+        font-size: 80px;
+    }
+
+    .loginHeader p {
+        font-size: 45px;
+    }
+
+    .loginInputsContainer input {
+        font-size: 18px;
+    }
+
+    .loginButtonContainer button {
+        font-size: 18px;
+        padding: 9px 30px;
+    }
+
+    .dashboard_content {
+        padding: 30px;
+    }
+
+    .dashboard_content_main {
+        padding-left: 15px;
+    }
+
+    .dashboard_topNav{
+        left: 26%
+    }
+
+    .appForm {
+        width: 100%;
+    }
+
+    .product_count, .user_count {
+        font-size: 15px;
+    }
+
+    .appBtn {
+        padding: 9px;
+    }
+
+    .orderProductRow, .salesProductRow {
+        padding: 10px;
+    }
+
+    .orderProductQty, .salesProductQty {
+        height: 26px;
+    }
+
+    .poList {
+        padding: 12px;
+    }
+
+    .poList table td, .poList table th {
+        padding: 9px;
+    }
+
+    .highcharts-figure {
+        max-width: 100%;
+    }
+
+    #container, #salesCategoryChart {
+        height: 350px;
+    }
 }
 
 /* Medium devices (landscape tablets, 768px and up) */
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 768px) and (max-width: 992px) {
+    .dashboard_sidebar {
+        width: 25%;
+    }
 
-}
-
-/* Large devices (laptops/desktops, 992px and up) */
-@media only screen and (min-width: 992px) {
-
-}
-
-/* Extra large devices (large laptops and desktops, 1200px and up) */
-@media only screen and (min-width: 1200px) {
-    
+    .dashboard_content_container {
+        width: 75%;
+        margin-left: 25%;
+    }
 }

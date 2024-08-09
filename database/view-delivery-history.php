@@ -11,4 +11,5 @@
     echo json_encode($stmt->fetchAll());
 
     // return;
-?>
+
+    ?>
