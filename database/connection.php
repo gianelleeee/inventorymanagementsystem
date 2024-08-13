@@ -1,17 +1,18 @@
 <?php
-    $servername = 'localhost';
-    $username = 'root';
-    $password = '';
+$servername = 'localhost';
+$username = 'root';
+$password = '';
+$dbname = 'inventory';
 
-    //connecting to database
-
-    try{
-        $conn = new PDO("mysql:host=$servername; dbname=inventory", $username, $password);
-        //set the PDO error mode to exception
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    } catch(\Exception $e){
-        $error_message = $e->getMessage();
-
-    }
-
+try {
+    // Connect to the database
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    
+    // Set the PDO error mode to exception
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    // Handle connection error
+    echo 'Connection failed: ' . $e->getMessage();
+    exit;
+}
 ?>
