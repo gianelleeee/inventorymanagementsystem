@@ -68,8 +68,11 @@ $products_arr = json_encode($products_arr);
                                                         $stmt->execute();
                                                         $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                         if ($products) {
-                                                            $product_names = array_column($products, 'product_name');
-                                                            echo implode(', ', $product_names);
+                                                            echo '<ul>';
+                                                            foreach ($products as $product) {
+                                                                echo '<li>' . htmlspecialchars($product['product_name']) . '</li>';
+                                                            }
+                                                            echo '</ul>';
                                                         }
                                                         ?>
                                                     </td>

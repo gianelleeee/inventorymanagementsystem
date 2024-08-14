@@ -39,6 +39,16 @@ $category_arr_json = json_encode($category_arr);
                         <div class="column column-12">
                             <h1 class="section_header"> <i class="fa fa-list"></i> List of Products</h1>
                             <div class="section_content">
+                            <div class="category_filter">
+                                <label for="category_filter">Filter by Category:</label>
+                                <select id="category_filter">
+                                    <option value="all">All Categories</option>
+                                    <?php foreach($category_list as $category){ ?>
+                                        <option value="<?= $category['id'] ?>"><?= $category['category_name'] ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+
                                 <div class="users">
                                     <table>
                                         <thead>
@@ -229,7 +239,57 @@ $category_arr_json = json_encode($category_arr);
                     });
                 }, 'json');
             }
-});
+              // Handle category filtering
+            $('#category_filter').on('change', function () {
+                var selectedCategory = $(this).val();
+                
+                $.ajax({
+                    method: 'GET',
+                    url: 'database/filter-products.php',
+                    data: { category_id: selectedCategory },
+                    dataType: 'json',
+                    success: function (data) {
+                        var productTableBody = $('table tbody');
+                        productTableBody.empty(); // Clear the table
+
+                        if (data.products.length > 0) {
+                            $.each(data.products, function (index, product) {
+                                var category_names = product.category_names ? product.category_names.join(', ') : 'N/A';
+
+                                var productRow = `<tr>
+                                    <td>${index + 1}</td>
+                                    <td class="productName">${product.product_name}</td>
+                                    <td class="productName">${product.stock}</td>
+                                    <td class="productDescription">${product.description}</td>
+                                    <td class="productCategory">${category_names}</td>
+                                    <td>${product.created_by_name}</td>
+                                    <td>${product.created_at}</td>
+                                    <td>${product.updated_at}</td>
+                                    <td>
+                                        <a href="#" class="updateProduct" data-pid="${product.id}"><i class="fa fa-pencil"></i> Edit</a>
+                                        <a href="#" class="deleteProduct" data-name="${product.product_name}" data-pid="${product.id}"><i class="fa fa-trash"></i> Delete</a>
+                                    </td>
+                                </tr>`;
+
+                                productTableBody.append(productRow);
+                            });
+                        } else {
+                            productTableBody.append('<tr><td colspan="9">No products found for this category.</td></tr>');
+                        }
+
+                        // Update product count
+                        $('.product_count').text(data.products.length + ' Products');
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        BootstrapDialog.alert({
+                            type: BootstrapDialog.TYPE_DANGER,
+                            message: 'An error occurred: ' + textStatus
+                        });
+                    }
+                });
+            });
+
+    });
     </script>
 </body>
 </html>
