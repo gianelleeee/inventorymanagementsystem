@@ -77,12 +77,7 @@ if (curNav) {
     if (mainNav) {
         mainNav.style.background = '#649037';
     }
-
-    if (curFile === 'dashboard.html') { // Replace with your actual Dashboard file name
-        curNav.style.borderTop = 'none';
-        curNav.style.borderBottom = 'none';
-    }
-
+    
     let subMenu = curNav.closest('.subMenus');
     let mainMenuIcon = mainNav.querySelector('i.mainMenuIconArrow');
     if (subMenu && mainMenuIcon) {

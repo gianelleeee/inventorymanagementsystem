@@ -163,20 +163,19 @@ ul.dashboard_menu_lists{
 }
 
 ul.dashboard_menu_lists li.liMainMenu{
-    padding-top: 5px;
-    font-size: 18px;
+    /* padding-top: 15px; */
+    font-size: 17px;
     text-transform: uppercase;
 }
 
 ul.dashboard_menu_lists li.liMainMenu a{
     text-decoration: none;
     color: #ffff;
-    height: 100%;
     display: block;
-    padding: 0px 15px;
+    padding-left: 15px;
     padding-right: 5px;
     padding-bottom: 15px;
-    padding-top: 5px;
+    padding-top: 15px;
 }
 
 ul.dashboard_menu_lists li.liMainMenu a i{
@@ -412,8 +411,6 @@ table td{
     border-top: 2px solid white !important;
     border-bottom: 2px solid white !important;
     background: #4d7326 !important;
-    padding-top: 15px !important;
-    margin-top: -3px !important;
 }
 
 .productTextAreaInput{
@@ -762,6 +759,60 @@ figure.highcharts-figure {
     max-width: 100%;
 }
 
+#reportsContainer{
+    margin-top: 68px;
+}
+
+.reportTypeContainer{
+    display: flex;
+    justify-content: flex-start;
+    padding: 10px 31px;
+}
+
+.reportTypeContainer2{
+    display: flex;
+    justify-content: left;
+    padding: 10px 31px;
+    width: 52%;
+}
+
+.reportType{
+    border: 1px solid #c2c6c2;
+    padding: 10px 24px;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 14px;
+    margin-left: 21px;
+    width: 100%;
+}
+
+.reportExportBtn{
+    padding: 4px 15px;
+    display: inline-block;
+    text-decoration: none;
+    text-transform: uppercase;
+    background: #649037;
+    color: white;
+    margin-left: 13px;
+    font-size: 11px;
+    border: 1px solid transparent;
+}
+
+.reportExportBtn:hover{
+    border: 1px solid #649037;
+    background: white;
+    color: #649037;
+}
+
+.reportType p{
+    font-size: 20px;
+    font-weight: 200;
+    margin-bottom: 10px;
+}
+
+.reportType:hover{
+    background: #97bd8c;
+}
 
 
 
