@@ -23,18 +23,31 @@ $stmt->execute();
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($products as &$product) {
+    // Handle category names
     if (!$product['category_names']) {
         $product['category_names'] = [];
     } else {
         $product['category_names'] = explode(', ', $product['category_names']);
     }
 
+    // Fetch created_by_name
     $created_by_id = $product['created_by'];
     $stmt = $conn->prepare("SELECT first_name, last_name FROM users WHERE id = :created_by_id");
     $stmt->bindParam(':created_by_id', $created_by_id);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     $product['created_by_name'] = $user['first_name'] . ' ' . $user['last_name'];
+
+    // Calculate stocks used
+    $product_id = $product['id'];
+    $stmt = $conn->prepare("SELECT SUM(sales_product.sales) as total_sales 
+                            FROM sales_product 
+                            INNER JOIN productscategory pc ON sales_product.product = pc.product 
+                            WHERE pc.product = :product_id");
+    $stmt->bindParam(':product_id', $product_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $product['stocks_used'] = $result['total_sales'] ? $result['total_sales'] : 0;
 }
 
 echo json_encode(['products' => $products]);

@@ -52,6 +52,7 @@ if (isset($_POST['submit'])) {
                     $mail->Subject = 'Recover your password';
                     $mail->Body = "<b>Dear User</b>
                     <h3>We received a request to reset your password.</h3>
+                    <p>This reset password email link is valid for 60 minutes.</p>
                     <p>Kindly click the below link to reset your password:</p>
                     <a href='http://localhost/inventorymanagementsystem/reset-password.php?token=$reset_token'>Reset Password</a>";
 

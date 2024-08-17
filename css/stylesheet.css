@@ -814,9 +814,48 @@ figure.highcharts-figure {
     background: #97bd8c;
 }
 
+#product_search{
+    height: 20px;
+    width: 250px;
+}
+
+#search_button:hover{
+    background-color: #9cce75;
+    border: 1px solid #555;
+}
+
+#search_button{
+    border: 1px solid #4d7326;
+}
+
+.low-stock {
+    color: red;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
 
 
+.button:hover {
+    background-color: #45a049;
+}
 
+.button {
+    background-color: #4CAF50; /* Green background */
+    border: none; /* Remove border */
+    color: white; /* White text */
+    padding: 15px 32px; /* Padding */
+    text-align: center; /* Centered text */
+    text-decoration: none; /* Remove underline */
+    display: inline-block; /* Align with other elements */
+    font-size: 16px; /* Font size */
+    margin: 4px 2px; /* Margin */
+    cursor: pointer; /* Pointer cursor on hover */
+    border-radius: 4px; /* Rounded corners */
+    transition: background-color 0.3s; /* Smooth transition */
+}
 
 /* Existing CSS */
 

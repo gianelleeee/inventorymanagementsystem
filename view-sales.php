@@ -29,26 +29,26 @@ $user = $_SESSION['user'];
                             <div class="section_content">
                                 <div class="soListContainers">
                                     <div class="soList">
-                                        <?php
-                                            $stmt = $conn->prepare("SELECT sales_product.id, sales_product.date, sales_product.product, products.product_name, sales_product.sales, users.first_name, users.last_name, category.category_name, sales_product.created_at
-                                                FROM sales_product
-                                                JOIN category ON sales_product.category = category.id
-                                                JOIN products ON sales_product.product = products.id
-                                                JOIN users ON sales_product.created_by = users.id
-                                                ORDER BY sales_product.date DESC");
-                                            $stmt->execute();
-                                            $sales_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    <?php
+                                        $stmt = $conn->prepare("SELECT sales_product.id, sales_product.date, sales_product.product, products.product_name, products.stock AS available_stock, sales_product.sales, users.first_name, users.last_name, category.category_name, sales_product.created_at
+                                            FROM sales_product
+                                            JOIN category ON sales_product.category = category.id
+                                            JOIN products ON sales_product.product = products.id
+                                            JOIN users ON sales_product.created_by = users.id
+                                            ORDER BY sales_product.date DESC");
+                                        $stmt->execute();
+                                        $sales_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                            // Organize data by date
-                                            $data = [];
-                                            foreach($sales_data as $sale) {
-                                                $date = $sale['date'];
-                                                if (!isset($data[$date])) {
-                                                    $data[$date] = [];
-                                                }
-                                                $data[$date][] = $sale;
+                                        // Organize data by date
+                                        $data = [];
+                                        foreach($sales_data as $sale) {
+                                            $date = $sale['date'];
+                                            if (!isset($data[$date])) {
+                                                $data[$date] = [];
                                             }
-                                        ?>
+                                            $data[$date][] = $sale;
+                                        }
+                                    ?>
 
                                         <?php
                                             foreach($data as $sale_date => $sales){
@@ -60,6 +60,7 @@ $user = $_SESSION['user'];
                                                     <tr>
                                                         <th>#</th>
                                                         <th>Product</th>
+                                                        <th>Available Stock</th> <!-- New Column -->
                                                         <th>Sales</th>
                                                         <th>Category</th>
                                                         <th>Added By</th>
@@ -67,12 +68,11 @@ $user = $_SESSION['user'];
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <?php
-                                                        foreach($sales as $index => $sale){
-                                                    ?>
+                                                    <?php foreach($sales as $index => $sale): ?>
                                                     <tr>
                                                         <td><?= $index + 1 ?></td>
                                                         <td class="po_product"><?= $sale['product_name']?></td>
+                                                        <td class="po_stock"><?= $sale['available_stock']?></td> <!-- New Column -->
                                                         <td class="po_qty_sales"><?= $sale['sales']?></td>
                                                         <td class="po_category"><?= $sale['category_name']?></td>
                                                         <td><?= $sale['first_name'] . ' ' . $sale['last_name']?></td>
@@ -85,9 +85,10 @@ $user = $_SESSION['user'];
                                                             <button class="appDeliveryHistoryBtn deleteSalesBtn" data-id="<?= $sale['id']?>">Delete</button>
                                                         </td>
                                                     </tr>
-                                                    <?php } ?>
+                                                    <?php endforeach; ?>
                                                 </tbody>
                                             </table>
+
                                             <div class="soSalesUpdateBtnContainer alignRight">
                                                 <!-- Removed undefined variable batch_id -->
                                                 <button class="orderBtn updateSoBtn" data-id="<?= str_replace(['-', ' '], ['_', '_'], $sale_date) ?>">Update</button>
@@ -123,6 +124,7 @@ $user = $_SESSION['user'];
 
                     // Get all sales record
                     var productList = document.querySelectorAll('#' + batchNumberContainer + ' .po_product');
+                    var stockList = document.querySelectorAll('#' + batchNumberContainer + ' .po_stock'); // New List
                     var sales = document.querySelectorAll('#' + batchNumberContainer + ' .po_qty_sales');
                     var categoryList = document.querySelectorAll('#' + batchNumberContainer + ' .po_category');
                     var rowIds = document.querySelectorAll('#' + batchNumberContainer + ' .po_qty_row_id');
@@ -133,12 +135,14 @@ $user = $_SESSION['user'];
                     for(var i = 0; i < productList.length; i++){
                         soListArr.push({
                             name: productList[i].innerText,
+                            stock: stockList[i].innerText, // New Data
                             sale: sales[i].innerText,
                             category: categoryList[i].innerText,
                             id: rowIds[i].value,
                             pid: pIds[i].value
                         });
                     }
+
 
                     // Store in HTML
                     var soListHtml = '\

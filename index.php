@@ -108,7 +108,7 @@ if ($_POST) {
                 </div>
                 <div class="link forget-pass text-left" style="padding-top: 6px;"><a href="forgot-password.php">Forgot password?</a></div>
                 <div class="loginButtonContainer">
-                    <button>Login</button>
+                    <button class="button">Login</button>
                 </div>
                 <div class="link login-link text-center" style="padding-top: 10px;"><a href="register.php">Register here</a></div>
             </form>

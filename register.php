@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="password" class="appFormInput" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
                 </div>
                 <div class="loginButtonContainer">
-                    <button type="submit">Register</button>
+                    <button class="button" type="submit">Register</button>
                 </div>
                 <div class="link register-link text-center" style="padding-top: 10px; font-size: 20px;">
                     <a href="index.php">Login here</a>
