@@ -25,15 +25,16 @@ $user = $_SESSION['user'];
                 <div class="dashboard_content_main">
                     <div class="row">
                         <div class="column column-12">
-                        <h1 class="section_header"><i class="fa fa-list"></i> Sales History</h1>
+                            <h1 class="section_header"><i class="fa fa-list"></i> Sales History</h1>
                             <div class="section_content">
                                 <div class="soListContainers">
                                     <div class="soList">
                                     <?php
-                                        $stmt = $conn->prepare("SELECT sales_product.id, sales_product.date, sales_product.product, products.product_name, products.stock AS available_stock, sales_product.sales, users.first_name, users.last_name, category.category_name, sales_product.created_at
+                                        // Updated SQL query to get available_stock directly from sales_product
+                                        $stmt = $conn->prepare("SELECT sales_product.id, sales_product.date, sales_product.product, products.product_name, sales_product.available_stock, sales_product.sales, users.first_name, users.last_name, category.category_name, sales_product.created_at
                                             FROM sales_product
-                                            JOIN category ON sales_product.category = category.id
                                             JOIN products ON sales_product.product = products.id
+                                            JOIN category ON sales_product.category = category.id
                                             JOIN users ON sales_product.created_by = users.id
                                             ORDER BY sales_product.date DESC");
                                         $stmt->execute();
@@ -89,10 +90,10 @@ $user = $_SESSION['user'];
                                                 </tbody>
                                             </table>
 
-                                            <div class="soSalesUpdateBtnContainer alignRight">
-                                                <!-- Removed undefined variable batch_id -->
+                                            <!-- <div class="soSalesUpdateBtnContainer alignRight"> -->
+                                                <!-- Removed undefined variable batch_id
                                                 <button class="orderBtn updateSoBtn" data-id="<?= str_replace(['-', ' '], ['_', '_'], $sale_date) ?>">Update</button>
-                                            </div>
+                                            </div> -->
                                         </div>
                                         <?php } ?>
                                     </div>
@@ -142,7 +143,6 @@ $user = $_SESSION['user'];
                             pid: pIds[i].value
                         });
                     }
-
 
                     // Store in HTML
                     var soListHtml = '\

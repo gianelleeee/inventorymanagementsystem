@@ -25,12 +25,13 @@ $pdf->SetFont('Arial', 'B', 10);
 // Pull data from the database
 include('connection.php');
 
+// Define headers for each report type
 $headers = [
-    'product' => ['No.', 'Product Name', 'Description', 'Stock', 'Created At', 'Updated At', 'Created By'],
+    'product' => ['No.', 'Product Name', 'Description', 'Stock', 'Stocks Used', 'Created At', 'Updated At', 'Created By'],
     'category' => ['No.', 'Category Name', 'Products', 'Created By', 'Created At', 'Updated At'],
     'delivery' => ['No.', 'Product Name', 'Category Name', 'Qty Received', 'Date Received', 'Date Updated'],
     'purchase' => ['Batch #', 'Product', 'Quantity Ordered', 'Quantity Received', 'Category', 'Status', 'Ordered By', 'Created Date'],
-    'sale' => ['Date', 'Product', 'Sales', 'Category', 'Added By', 'Created Date']
+    'sale' => ['Date', 'Product', 'Sales', 'Available Stocks', 'Category', 'Added By', 'Created Date']
 ];
 
 $header = $headers[$type];
@@ -41,7 +42,7 @@ $columnWidths = array_fill(0, count($header), 0);
 // Set initial font for width calculation
 $pdf->SetFont('Arial', '', 10);
 
-// Determine the maximum width needed for each column based on header and data
+// Function to calculate the maximum width needed for each column
 function calculateColumnWidths($data, $header, $pdf) {
     $columnWidths = array_fill(0, count($header), 0);
     
@@ -86,7 +87,9 @@ $data = []; // Initialize data array
 if ($type === 'product') {
     // Query for product report
     $stmt = $conn->prepare("
-        SELECT p.id, p.product_name, p.description, p.stock, CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.created_at, p.updated_at
+        SELECT p.id, p.product_name, p.description, p.stock, 
+               (SELECT SUM(sp.sales) FROM sales_product sp WHERE sp.product = p.id) AS stocks_used, 
+               CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.created_at, p.updated_at
         FROM products p
         LEFT JOIN users u ON p.created_by = u.id
         ORDER BY p.created_at DESC
@@ -102,6 +105,7 @@ if ($type === 'product') {
             $product['product_name'],
             $product['description'],
             $product['stock'],
+            $product['stocks_used'] ?: 0, // Add 'stocks used'
             $product['created_at'],
             $product['updated_at'],
             $product['user_name']
@@ -193,7 +197,9 @@ if ($type === 'product') {
 } elseif ($type === 'sale') {
     // Query for sales report
     $stmt = $conn->prepare("
-        SELECT sp.date, p.product_name, sp.sales, c.category_name, CONCAT(u.first_name, ' ', u.last_name) AS created_by, sp.created_at
+        SELECT sp.date, p.product_name, sp.sales, c.category_name, 
+               sp.available_stock, 
+               CONCAT(u.first_name, ' ', u.last_name) AS created_by, sp.created_at
         FROM sales_product sp
         LEFT JOIN productscategory pc ON sp.product = pc.product
         LEFT JOIN products p ON pc.product = p.id
@@ -211,6 +217,7 @@ if ($type === 'product') {
             $sale['date'],
             $sale['product_name'],
             $sale['sales'],
+            $sale['available_stock'], // Add 'available stocks'
             $sale['category_name'],
             $sale['created_by'],
             $sale['created_at']
@@ -218,12 +225,8 @@ if ($type === 'product') {
     }
 }
 
-// Calculate column widths based on data
 $columnWidths = calculateColumnWidths($data, $header, $pdf);
-
-// Output data rows
 outputDataRows($data, $columnWidths, $pdf, $header);
 
-// Output the PDF
-$pdf->Output();
+$pdf->Output('D', $file_name);
 ?>

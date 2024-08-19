@@ -1,5 +1,5 @@
 <?php
-// database/update-stocks.php
+// database/update-sales.php
 
 // Include your database connection file
 include('connection.php');
@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Prepare SQL statements
     $getOldSalesStmt = $conn->prepare('SELECT sales FROM sales_product WHERE id = :id');
-    $updateSalesStmt = $conn->prepare('UPDATE sales_product SET sales = :sales WHERE id = :id');
+    $updateSalesStmt = $conn->prepare('UPDATE sales_product SET sales = :sales, available_stock = :available_stock WHERE id = :id');
     $updateStockStmt = $conn->prepare('UPDATE products SET stock = stock + :difference WHERE id = :product_id');
 
     try {
@@ -32,6 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Loop through each item in the payload
         foreach ($data['payload'] as $item) {
+            // Validate item data
+            if (!isset($item['id']) || !isset($item['sale']) || !isset($item['pid'])) {
+                sendResponse(false, 'Missing data fields in payload.');
+            }
+
             // Get the current sales value
             $getOldSalesStmt->bindParam(':id', $item['id'], PDO::PARAM_INT);
             $getOldSalesStmt->execute();
@@ -44,14 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Calculate the difference between the new and old sales values
             $salesDifference = $item['sale'] - $oldSales;
 
-            // Update the sales record
+            // Update the sales record and available stock
+            // Calculate available stock
+            $availableStock = $item['available_stock'] - $salesDifference;
+            
             $updateSalesStmt->bindParam(':sales', $item['sale'], PDO::PARAM_INT);
+            $updateSalesStmt->bindParam(':available_stock', $availableStock, PDO::PARAM_INT);
             $updateSalesStmt->bindParam(':id', $item['id'], PDO::PARAM_INT);
             $updateSalesStmt->execute();
 
             // Adjust the stock based on the sales difference
-            // If salesDifference is positive (sales increased), subtract from stock
-            // If salesDifference is negative (sales decreased), add to stock
             $stockDifference = -$salesDifference; // This will correctly adjust stock: negative difference means we add to stock, positive difference means we subtract from stock
             
             $updateStockStmt->bindParam(':difference', $stockDifference, PDO::PARAM_INT);

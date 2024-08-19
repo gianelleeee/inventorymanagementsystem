@@ -20,11 +20,15 @@ header("Content-Type: application/vnd.ms-excel");
 include('connection.php');
 
 if ($type === 'product') {
-    // Query for product report
+    // Query for product report with stocks used
     $stmt = $conn->prepare("
-        SELECT p.id, p.product_name, p.description, p.stock, CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.created_at, p.updated_at
+        SELECT p.id, p.product_name, p.description, p.stock,
+               COALESCE(SUM(sp.sales), 0) AS stocks_used,
+               CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.created_at, p.updated_at
         FROM products p
         LEFT JOIN users u ON p.created_by = u.id
+        LEFT JOIN sales_product sp ON p.id = sp.product
+        GROUP BY p.id, p.product_name, p.description, p.stock, u.first_name, u.last_name, p.created_at, p.updated_at
         ORDER BY p.created_at DESC
     ");
     $stmt->execute();
@@ -33,7 +37,7 @@ if ($type === 'product') {
     $products = $stmt->fetchAll();
 
     // Define the formal header row for product report
-    $header = ['number' => 'No.', 'product_name' => 'Product Name', 'description' => 'Description', 'stock' => 'Stock', 'created_at' => 'Created At', 'updated_at' => 'Updated At', 'user_name' => 'Created By'];
+    $header = ['number' => 'No.', 'product_name' => 'Product Name', 'description' => 'Description', 'stock' => 'Stock', 'stocks_used' => 'Stocks Used', 'created_at' => 'Created At', 'updated_at' => 'Updated At', 'user_name' => 'Created By'];
 
     // Output the header row
     echo implode("\t", $header) . "\n";
@@ -46,6 +50,7 @@ if ($type === 'product') {
             'product_name' => $product['product_name'],
             'description' => $product['description'],
             'stock' => $product['stock'],
+            'stocks_used' => $product['stocks_used'],
             'created_at' => $product['created_at'],
             'updated_at' => $product['updated_at'],
             'user_name' => $product['user_name']
@@ -60,50 +65,8 @@ if ($type === 'product') {
 
         echo implode("\t", $row) . "\n";
     }
-} elseif ($type === 'category') {
-    // Query for category report
-    $stmt = $conn->prepare("
-        SELECT c.category_name AS category_name, GROUP_CONCAT(p.product_name SEPARATOR ', ') AS product_names, CONCAT(u.first_name, ' ', u.last_name) AS user_name, c.created_at, c.updated_at
-        FROM productscategory pc
-        LEFT JOIN category c ON pc.category = c.id
-        LEFT JOIN users u ON c.created_by = u.id
-        LEFT JOIN products p ON pc.product = p.id
-        GROUP BY c.category_name, u.first_name, u.last_name, c.created_at, c.updated_at
-        ORDER BY c.created_at DESC
-    ");
-    $stmt->execute();
-    $stmt->setFetchMode(PDO::FETCH_ASSOC);
-
-    $categories = $stmt->fetchAll();
-
-    // Define the formal header row for category report
-    $header = ['number' => 'No.', 'category_name' => 'CATEGORY NAME', 'product_names' => 'PRODUCTS', 'user_name' => 'CREATED BY', 'created_at' => 'CREATED AT', 'updated_at' => 'UPDATED AT'];
-
-    // Output the header row
-    echo implode("\t", $header) . "\n";
-
-    $count = 1; // Initialize the counter
-    foreach ($categories as $category) {
-        // Map the data to the formal header names
-        $row = [
-            'number' => $count++,
-            'category_name' => $category['category_name'],
-            'product_names' => $category['product_names'],
-            'user_name' => $category['user_name'],
-            'created_at' => $category['created_at'],
-            'updated_at' => $category['updated_at']
-        ];
-
-        // Detect double-quotes and escape any value that contains them
-        array_walk($row, function (&$str) {
-            $str = preg_replace("/\t/", "\\t", $str);
-            $str = preg_replace("/\r?\n/", "\\n", $str);
-            if (strstr($str, '"')) $str = '"' . str_replace('"', '""', $str) . '"';
-        });
-
-        echo implode("\t", $row) . "\n";
-    }
-} elseif ($type === 'delivery') {
+}
+ elseif ($type === 'delivery') {
     // Query for delivery report
     $stmt = $conn->prepare("
         SELECT d.id, d.order_product_id, d.qty_received, d.date_received, d.date_updated,
@@ -200,9 +163,10 @@ if ($type === 'product') {
         echo implode("\t", $row) . "\n";
     }
 } elseif ($type === 'sale') {
-    // Query for sales report with descending order by date
+    // Query for sales report with available stocks
     $stmt = $conn->prepare("
-        SELECT sp.date, p.product_name, sp.sales, c.category_name, CONCAT(u.first_name, ' ', u.last_name) AS created_by, sp.created_at
+        SELECT sp.date, p.product_name, sp.sales, c.category_name, sp.available_stock,
+               CONCAT(u.first_name, ' ', u.last_name) AS created_by, sp.created_at
         FROM sales_product sp
         LEFT JOIN productscategory pc ON sp.product = pc.product
         LEFT JOIN products p ON pc.product = p.id
@@ -215,8 +179,8 @@ if ($type === 'product') {
 
     $sales = $stmt->fetchAll();
 
-    // Define the header row, including the date column
-    $header = ['date' => 'Date', 'product_name' => 'Product', 'sales' => 'Sales', 'category_name' => 'Category', 'created_by' => 'Added By', 'created_at' => 'Created Date'];
+    // Define the header row, including the available stocks column
+    $header = ['date' => 'Date', 'product_name' => 'Product', 'sales' => 'Sales', 'available_stock' => 'Available Stock', 'category_name' => 'Category', 'created_by' => 'Added By', 'created_at' => 'Created Date'];
 
     // Output the header row
     echo implode("\t", $header) . "\n";
@@ -227,6 +191,7 @@ if ($type === 'product') {
             'date' => $sale['date'],
             'product_name' => $sale['product_name'],
             'sales' => $sale['sales'],
+            'available_stock' => $sale['available_stock'],
             'category_name' => $sale['category_name'],
             'created_by' => $sale['created_by'],
             'created_at' => $sale['created_at']

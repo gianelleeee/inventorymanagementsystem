@@ -857,6 +857,10 @@ figure.highcharts-figure {
     transition: background-color 0.3s; /* Smooth transition */
 }
 
+#categoryFilter{
+    border: 1px solid #4d7326;
+}
+
 /* Existing CSS */
 
 /* Extra small devices (phones, 600px and down) */
