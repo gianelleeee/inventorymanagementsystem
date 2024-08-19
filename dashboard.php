@@ -121,135 +121,185 @@
         });
     </script>
 
-       <script>
-    // Prepare the data for Chart.js
-    const labels1 = <?= json_encode($dates) ?>;
+    <script>
+        // Prepare the data for Chart.js
+        const labels1 = <?= json_encode($dates) ?>;
 
-    const datasets = [
-        <?php foreach ($categories as $category): ?>
-        {
-            label: '<?= $category ?>',
-            data: <?= json_encode(array_values($data_by_category[$category])) ?>,
-            fill: false,
-            borderColor: '<?= sprintf('#%06X', mt_rand(0, 0xFFFFFF)) ?>',
-            tension: 0.1
-        },
-        <?php endforeach; ?>
-    ];
+        const datasets = [
+            <?php foreach ($categories as $category): ?>
+            {
+                label: '<?= $category ?>',
+                data: <?= json_encode(array_values($data_by_category[$category])) ?>,
+                fill: false,
+                borderColor: '<?= sprintf('#%06X', mt_rand(0, 0xFFFFFF)) ?>',
+                tension: 0.1
+            },
+            <?php endforeach; ?>
+        ];
 
-    // Create the line chart
-    const ctx = document.getElementById('salesCategoryChart').getContext('2d');
-    const salesCategoryChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels1,
-            datasets: datasets
-        },
-        options: {
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
+        // Create the line chart for categories
+        const ctx1 = document.getElementById('salesCategoryChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: labels1,
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Total Sales'
+                        },
+                        beginAtZero: true
                     }
                 },
-                y: {
+                plugins: {
                     title: {
                         display: true,
-                        text: 'Total Sales'
-                    },
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Sales per Category',
-                    font: {
-                        size: 24 // Adjust the font size here
+                        text: 'Sales per Category',
+                        font: {
+                            size: 24 // Adjust the font size here
+                        }
                     }
                 }
             }
-        }
-    });
-</script>
+        });
+    </script>
 
 <script>
-// Ensure allProductData and data_by_date are defined correctly
-const allProductData = <?= json_encode($product_data_by_category) ?>; // Product sales data by category
-const labels = <?= json_encode($data_by_date) ?>; // Date labels for the x-axis
+    // Ensure allProductData and data_by_date are defined correctly
+    const allProductData = <?= json_encode($product_data_by_category) ?>; // Product sales data by category
+    const labels = <?= json_encode($data_by_date) ?>; // Date labels for the x-axis
 
-// Global variable to hold the chart instance for sales by product
-let salesProductChartInstance = null;
-function updateChart(category) {
-    const ctx = document.getElementById('salesProductChart').getContext('2d');
+    // Global variable to hold the chart instance for sales by product
+    let salesProductChartInstance = null;
 
-    // If a chart already exists, destroy it before creating a new one
-    if (salesProductChartInstance !== null) {
-        salesProductChartInstance.destroy();
+    function aggregateProductData() {
+        const aggregatedData = {};
+
+        // Loop through each category and aggregate product sales data
+        for (const products of Object.values(allProductData)) {
+            for (const [product, salesData] of Object.entries(products)) {
+                if (!aggregatedData[product]) {
+                    aggregatedData[product] = {};
+                }
+                labels.forEach(date => {
+                    if (salesData[date]) {
+                        if (!aggregatedData[product][date]) {
+                            aggregatedData[product][date] = 0;
+                        }
+                        aggregatedData[product][date] += salesData[date];
+                    }
+                });
+            }
+        }
+
+        return aggregatedData;
     }
 
-    const datasets = [];
-    // Check if the selected category has data
-    if (category && allProductData[category]) {
-        // Loop through products in the selected category
-        for (const [product, salesData] of Object.entries(allProductData[category])) {
+    // Function to update the product sales chart
+    function updateChart(category) {
+        const ctx = document.getElementById('salesProductChart').getContext('2d');
+
+        // If a chart already exists, destroy it before creating a new one
+        if (salesProductChartInstance !== null) {
+            salesProductChartInstance.destroy();
+        }
+
+        const datasets = [];
+        const uniqueLabels = [...new Set(labels)]; // Ensure unique labels
+
+        let dataToDisplay = {};
+
+        if (category === '') {
+            // Show sales for all products by default
+            dataToDisplay = aggregateProductData();
+        } else {
+            // Show sales for products in the selected category
+            if (allProductData[category]) {
+                for (const [product, salesData] of Object.entries(allProductData[category])) {
+                    if (!dataToDisplay[product]) {
+                        dataToDisplay[product] = {};
+                    }
+                    uniqueLabels.forEach(date => {
+                        if (salesData[date]) {
+                            if (!dataToDisplay[product][date]) {
+                                dataToDisplay[product][date] = 0;
+                            }
+                            dataToDisplay[product][date] += salesData[date];
+                        }
+                    });
+                }
+            }
+        }
+
+        // Create datasets for each product
+        for (const [product, salesData] of Object.entries(dataToDisplay)) {
             datasets.push({
                 label: product,
-                data: labels.map(date => salesData[date] || 0), // Fill data based on the selected category and product
+                data: uniqueLabels.map(date => salesData[date] || 0),
                 fill: false,
                 borderColor: '#' + Math.floor(Math.random() * 16777215).toString(16), // Random color
                 tension: 0.1
             });
         }
-    }
 
-    // Create a new chart with filtered data
-    salesProductChartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels, // Dates are the same regardless of category
-            datasets: datasets // Only datasets for the selected category are included
-        },
-        options: {
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Date'
+        // Create a new chart with filtered data
+        salesProductChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: uniqueLabels, // Ensure unique labels
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Total Sales'
+                        },
+                        beginAtZero: true
                     }
                 },
-                y: {
+                plugins: {
                     title: {
                         display: true,
-                        text: 'Total Sales'
-                    },
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Sales per Product',
-                    font: {
-                        size: 24
+                        text: 'Sales per Product',
+                        font: {
+                            size: 24
+                        }
                     }
                 }
             }
-        }
+        });
+    }
+
+    // Initialize chart with all products
+    updateChart('');
+
+    // Handle category filter change
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        const selectedCategory = this.value;
+        updateChart(selectedCategory);
     });
-}
-
-// Initialize chart with no category filter
-updateChart('');
-
-// Handle category filter change
-document.getElementById('categoryFilter').addEventListener('change', function () {
-    const selectedCategory = this.value;
-    updateChart(selectedCategory);
-});
 
 </script>
+
+
 
 </body>
 </html>
