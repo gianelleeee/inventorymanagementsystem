@@ -60,7 +60,20 @@ try {
     if ($table === 'users') {
         $user_id = $id;
 
-        // Delete the user itself
+        // Update related rows to set created_by to NULL instead of deleting
+        $command = $conn->prepare("UPDATE sales_product SET created_by = NULL WHERE created_by = :id");
+        $command->execute([':id' => $user_id]);
+
+        $command = $conn->prepare("UPDATE order_product SET created_by = NULL WHERE created_by = :id");
+        $command->execute([':id' => $user_id]);
+
+        $command = $conn->prepare("UPDATE products SET created_by = NULL WHERE created_by = :id");
+        $command->execute([':id' => $user_id]);
+
+        $command = $conn->prepare("UPDATE category SET created_by = NULL WHERE created_by = :id");
+        $command->execute([':id' => $user_id]);
+
+        // Finally, delete the user itself
         $command = $conn->prepare("DELETE FROM users WHERE id = :id");
         $command->execute([':id' => $user_id]);
     }

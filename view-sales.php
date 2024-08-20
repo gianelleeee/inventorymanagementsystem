@@ -31,12 +31,28 @@ $user = $_SESSION['user'];
                                     <div class="soList">
                                     <?php
                                         // Updated SQL query to get available_stock directly from sales_product
-                                        $stmt = $conn->prepare("SELECT sales_product.id, sales_product.date, sales_product.product, products.product_name, sales_product.available_stock, sales_product.sales, users.first_name, users.last_name, category.category_name, sales_product.created_at
-                                            FROM sales_product
-                                            JOIN products ON sales_product.product = products.id
-                                            JOIN category ON sales_product.category = category.id
-                                            JOIN users ON sales_product.created_by = users.id
-                                            ORDER BY sales_product.date DESC");
+                                        $stmt = $conn->prepare("
+                                            SELECT 
+                                                sales_product.id, 
+                                                sales_product.date, 
+                                                sales_product.product, 
+                                                products.product_name, 
+                                                sales_product.available_stock, 
+                                                sales_product.sales, 
+                                                COALESCE(CONCAT(users.first_name, ' ', users.last_name), 'User Deleted') AS full_name, 
+                                                category.category_name, 
+                                                sales_product.created_at
+                                            FROM 
+                                                sales_product
+                                            JOIN 
+                                                products ON sales_product.product = products.id
+                                            JOIN 
+                                                category ON sales_product.category = category.id
+                                            LEFT JOIN 
+                                                users ON sales_product.created_by = users.id
+                                            ORDER BY 
+                                                sales_product.date DESC
+                                        ");
                                         $stmt->execute();
                                         $sales_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -76,7 +92,7 @@ $user = $_SESSION['user'];
                                                         <td class="po_stock"><?= $sale['available_stock']?></td> <!-- New Column -->
                                                         <td class="po_qty_sales"><?= $sale['sales']?></td>
                                                         <td class="po_category"><?= $sale['category_name']?></td>
-                                                        <td><?= $sale['first_name'] . ' ' . $sale['last_name']?></td>
+                                                        <td><?= $sale['full_name']?></td>
                                                         <td>
                                                             <?= $sale['created_at']?>
                                                             <input type="hidden" class="po_qty_row_id" value="<?= $sale['id']?>">

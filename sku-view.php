@@ -83,8 +83,13 @@ $products_arr = json_encode($products_arr);
                                                         $stmt->bindParam(':created_by', $created_by, PDO::PARAM_INT);
                                                         $stmt->execute();
                                                         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                        $created_by_name = $user['first_name'] . ' ' . $user['last_name'];
-                                                        echo $created_by_name;
+
+                                                        if ($user) {
+                                                            $created_by_name = htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
+                                                            echo $created_by_name;
+                                                        } else {
+                                                            echo "User Deleted";
+                                                        }
                                                         ?>
                                                     </td>
                                                     <td><?= date('M d, Y @ h:i:s A', strtotime($cat['created_at'])) ?></td>

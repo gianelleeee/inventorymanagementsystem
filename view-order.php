@@ -30,18 +30,35 @@ $user = $_SESSION['user'];
                                 <div class="poListContainers">
                                     <div class="poList">
                                         <?php
-                                        $stmt = $conn->prepare("SELECT order_product.id, order_product.product, products.product_name, order_product.quantity_ordered, order_product.quantity_received, users.first_name, users.last_name, category.category_name, order_product.status, order_product.created_at, order_product.batch
-                                            FROM order_product, category, products, users 
-                                            WHERE 
-                                                order_product.category = category.id 
-                                            AND 
-                                                order_product.product = products.id 
-                                            AND 
-                                                order_product.created_by = users.id
+                                       $stmt = $conn->prepare("
+                                            SELECT 
+                                                order_product.id, 
+                                                order_product.product, 
+                                                products.product_name, 
+                                                order_product.quantity_ordered, 
+                                                order_product.quantity_received, 
+                                                users.first_name, 
+                                                users.last_name, 
+                                                category.category_name, 
+                                                order_product.status, 
+                                                order_product.created_at, 
+                                                order_product.batch,
+                                                IFNULL(users.first_name, 'User Deleted') as first_name, 
+                                                IFNULL(users.last_name, '') as last_name 
+                                            FROM 
+                                                order_product 
+                                            LEFT JOIN 
+                                                category ON order_product.category = category.id 
+                                            LEFT JOIN 
+                                                products ON order_product.product = products.id 
+                                            LEFT JOIN 
+                                                users ON order_product.created_by = users.id
                                             ORDER BY 
-                                                order_product.created_at DESC");
+                                                order_product.created_at DESC
+                                        ");
                                         $stmt->execute();
                                         $purchase_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                        
 
                                         $data = [];
                                         foreach($purchase_orders as $purchase_order){

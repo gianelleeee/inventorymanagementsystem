@@ -107,7 +107,11 @@ $category_arr_json = json_encode($category_arr);
                                                         $stmt->bindParam(':created_by_id', $created_by_id, PDO::PARAM_INT);
                                                         $stmt->execute();
                                                         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                        $created_by_name = $row['first_name'] . ' ' . $row['last_name'];
+                                                        if ($row) {
+                                                            $created_by_name = $row['first_name'] . ' ' . $row['last_name'];
+                                                        } else {
+                                                            $created_by_name = 'User Deleted';
+                                                        }
                                                         echo $created_by_name;
                                                         ?>
                                                     </td>
@@ -222,39 +226,36 @@ $category_arr_json = json_encode($category_arr);
                             <div class="appFormInputContainer">\
                                 <label for="categorySelect">Category</label>\
                                 <select name="category[]" id="categorySelect" multiple="">\
-                                    <option value="">Select Category</option>\
                                     ${categoryOption}\
                                 </select>\
                             </div>\
-                            <input type="hidden" name="pid" value="${productDetails.id}"/>\
+                            <input type="hidden" name="id" value="${id}">\
+                            <input type="hidden" name="table" value="products">\
+                            <input type="hidden" name="operation" value="update">\
                         </form>`,
                         callback: function (isUpdate) {
                             if (isUpdate) {
-                                var formData = $('#editProductForm').serialize();
+                                var form = $('#editProductForm').serializeArray();
+                                var productName = form.find(input => input.name === 'product_name').value;
 
-                                $.ajax({
-                                    method: 'POST',
-                                    data: formData,
-                                    url: 'database/update-product.php',
-                                    dataType: 'json',
-                                    success: function (data) {
-                                        var message = data.success ? 'Product successfully updated!' : 'Error Processing Your Request.';
-                                        BootstrapDialog.alert({
-                                            type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
-                                            message: message,
-                                            callback: function () {
-                                                if (data.success) {
-                                                    location.reload();
-                                                }
+                                $.post('database/update.php', form, function (data) {
+                                    var message = data.success ? productName + ' successfully updated!' : 'Error Processing Your Request.';
+
+                                    BootstrapDialog.alert({
+                                        type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
+                                        message: message,
+                                        callback: function () {
+                                            if (data.success) {
+                                                // Reload and update the table
+                                                location.reload();
                                             }
-                                        });
-                                    },
-                                    error: function (jqXHR, textStatus, errorThrown) {
-                                        BootstrapDialog.alert({
-                                            type: BootstrapDialog.TYPE_DANGER,
-                                            message: 'An error occurred: ' + textStatus
-                                        });
-                                    }
+                                        }
+                                    });
+                                }, 'json').fail(function (jqXHR, textStatus, errorThrown) {
+                                    BootstrapDialog.alert({
+                                        type: BootstrapDialog.TYPE_DANGER,
+                                        message: 'An error occurred: ' + textStatus
+                                    });
                                 });
                             }
                         }
@@ -262,78 +263,56 @@ $category_arr_json = json_encode($category_arr);
                 }, 'json');
             }
 
-            // Function to handle search
-            $('#search_button').on('click', function () {
-                var searchTerm = $('#product_search').val().toLowerCase();
-
-                $('tbody tr').each(function () {
-                    var productName = $(this).find('.productName').text().toLowerCase();
-                    var description = $(this).find('.productDescription').text().toLowerCase();
-
-                    if (productName.includes(searchTerm) || description.includes(searchTerm)) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-
-                updateProductCount();
+            // Filter by category
+            $('#category_filter').on('change', function () {
+                var selectedCategory = $(this).val();
+                filterProducts(selectedCategory);
             });
 
-            // Function to handle category filter
-            $('#category_filter').on('change', function () {
-            var selectedCategory = $(this).val();
-            var noProductsMessage = $('#no_products_message');
-
-            if (selectedCategory == "all") {
-                $('tbody tr').show();
-                noProductsMessage.hide();
-            } else {
-                var visibleRows = 0;
-                $('tbody tr').each(function () {
-                    var categories = $(this).data('category').toString().split(',');
-                    if (categories.includes(selectedCategory)) {
-                        $(this).show();
-                        visibleRows++;
-                    } else {
-                        $(this).hide();
-                    }
-                });
-
-                if (visibleRows === 0) {
-                    noProductsMessage.show();
+            // Filter products function
+            function filterProducts(categoryId) {
+                if (categoryId === 'all') {
+                    $('tbody tr').show();
                 } else {
-                    noProductsMessage.hide();
+                    $('tbody tr').each(function () {
+                        var rowCategory = $(this).data('category').toString();
+                        $(this).toggle(rowCategory.includes(categoryId));
+                    });
+                }
+                updateProductCount();
+            }
+
+            // Update product count
+            function updateProductCount() {
+                var visibleProducts = $('tbody tr:visible').length;
+                $('.product_count').text(visibleProducts + ' Products');
+                if (visibleProducts === 0) {
+                    $('#no_products_message').show();
+                } else {
+                    $('#no_products_message').hide();
                 }
             }
 
-            updateProductCount();
-        });
+            // Attach events on load
+            attachDeleteEvent();
+            attachUpdateEvent();
 
-            // Function to update product count
-            function updateProductCount() {
-                var visibleCount = $('tbody tr:visible').length;
-                $('.product_count').text(visibleCount + ' Products');
-            }
-            // Function to highlight low stock
-            function highlightLowStock() {
-                $('tbody tr').each(function () {
-                    // Get the stock value from the appropriate column
-                    var stock = parseInt($(this).find('td:nth-child(5)').text().replace(/,/g, '')); // Adjust the index if needed
-                    
-                    // Apply or remove the low-stock class based on the stock value
-                    if (stock <= 20) {
-                        $(this).find('td:nth-child(5)').addClass('low-stock');
-                    } else {
-                        $(this).find('td:nth-child(5)').removeClass('low-stock');
-                    }
-                });
-            }
-
-                attachDeleteEvent();
-                attachUpdateEvent();
-                highlightLowStock(); // Call this function after table is populated
+            // Search products by name or description
+            $('#search_button').on('click', function () {
+                var searchQuery = $('#product_search').val().toLowerCase();
+                searchProducts(searchQuery);
             });
+
+            // Search products function
+            function searchProducts(query) {
+                $('tbody tr').each(function () {
+                    var productName = $(this).find('.productName').text().toLowerCase();
+                    var productDescription = $(this).find('.productDescription').text().toLowerCase();
+                    $(this).toggle(productName.includes(query) || productDescription.includes(query));
+                });
+                updateProductCount();
+            }
+        });
     </script>
 </body>
 </html>
