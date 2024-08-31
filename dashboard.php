@@ -56,70 +56,85 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <script>
-        var graphData = <?= json_encode($results) ?>;
-        Highcharts.chart('container', {
-            chart: {
-                type: 'pie',
-                backgroundColor: '#f4f4f4', // Light background
-            },
-            title: {
-                text: 'Purchase Order By Status',
-                style: {
-                    color: '#333',
-                    fontSize: '20px',
-                    fontWeight: 'bold'
-                }
-            },
-            tooltip: {
-                pointFormatter: function() {
-                    return `<b>${this.name}</b>: ${this.y} (${this.percentage.toFixed(1)}%)`;
-                }
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.name}: {point.y} ({point.percentage:.1f}%)',
-                        style: {
-                            fontSize: '14px',
-                            color: '#333',
-                        },
-                        distance: -30, // Adjust label distance from the pie slices
-                        filter: {
-                            property: 'percentage',
-                            operator: '>',
-                            value: 5
-                        }
+    var graphData = <?= json_encode($results) ?>;
+    
+    // Define the color mapping for each status
+    var statusColors = {
+        'COMPLETE': '#90EE90', // Light Green
+        'INCOMPLETE': '#FFFFE0', // Light Yellow
+        'PENDING': '#F08080' // Light Coral
+    };
+
+    Highcharts.chart('container', {
+        chart: {
+            type: 'pie',
+            backgroundColor: '#f4f4f4', // Light background
+        },
+        title: {
+            text: 'Purchase Order By Status',
+            style: {
+                color: '#333',
+                fontSize: '20px',
+                fontWeight: 'bold'
+            }
+        },
+        tooltip: {
+            pointFormatter: function() {
+                return `<b>${this.name}</b>: ${this.y} (${this.percentage.toFixed(1)}%)`;
+            }
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.name}: {point.y} ({point.percentage:.1f}%)',
+                    style: {
+                        fontSize: '14px',
+                        color: '#333',
                     },
-                    showInLegend: false // Disable legend
-                }
-            },
-            series: [{
-                name: 'Status',
-                colorByPoint: true,
-                data: graphData,
-                colors: ['#a6cee3', '#b2df8a', '#fb9a99', '#fdbf6f', '#cab2d6', '#ffff99', '#1f78b4', '#33a02c', '#e31a1c']
-            }],
-            responsive: {
-                rules: [{
-                    condition: {
-                        maxWidth: 500
-                    },
-                    chartOptions: {
-                        plotOptions: {
-                            pie: {
-                                dataLabels: {
-                                    distance: -20
-                                }
+                    distance: -30, // Adjust label distance from the pie slices
+                    filter: {
+                        property: 'percentage',
+                        operator: '>',
+                        value: 5
+                    }
+                },
+                showInLegend: false // Disable legend
+            }
+        },
+        series: [{
+            name: 'Status',
+            colorByPoint: true,
+            data: graphData.map(function(point) {
+                // Assign colors based on status
+                return {
+                    name: point.name,
+                    y: point.y,
+                    color: statusColors[point.name] || '#FFFFFF' // Default to white if status is unknown
+                };
+            })
+        }],
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 500
+                },
+                chartOptions: {
+                    plotOptions: {
+                        pie: {
+                            dataLabels: {
+                                distance: -20
                             }
                         }
                     }
-                }]
-            }
-        });
-    </script>
+                }
+            }]
+        }
+    });
+</script>
+
 
     <script>
         // Prepare the data for Chart.js
