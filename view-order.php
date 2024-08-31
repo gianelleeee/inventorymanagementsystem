@@ -299,18 +299,58 @@ $user = $_SESSION['user'];
                         }
                     });
                 }
-            });
-        };
+                 // If delivery history button is clicked
+            if(classList.contains('appDeliveryHistoryBtn')){
+                let id = targetElement.dataset.id;
 
-        this.initialize = function() {
-            this.registerEvents();
-        };
+                $.get('database/view-delivery-history.php', {id: id}, function(data){
+                    if(data.length){
+                        rows = '';
+                        data.forEach((row, id) => {
+                            rows += '\
+                            <tr>\
+                                    <td>'+ (id + 1) +'</td>\
+                                    <td>'+ (new Date(row['date_received'])).toDateString() +'</td>\
+                                    <td>'+ row['qty_received'] +'</td>\
+                                </tr>\
+                        ';
+                        });
+
+                        deliveryHistoryHtml = '<table class="deliveryHistoryTable">\
+                            <thead>\
+                                <tr>\
+                                    <th>#</th>\
+                                    <th>Date Received</th>\
+                                    <th>Quantity Delivered</th>\
+                                </tr>\
+                            </thead>\
+                            <tbody>'+ rows+'</tbody>\
+                        </table>\
+                        ';
+
+                        BootstrapDialog.show({
+                            title: '<strong>Delivery History</strong>',
+                            type: BootstrapDialog.TYPE_PRIMARY,
+                            message: deliveryHistoryHtml
+                        })
+                    } else {
+                        BootstrapDialog.alert({
+                            title: '<strong>No Delivery History</strong>',
+                            type: BootstrapDialog.TYPE_INFO,
+                            message: 'No Delivery History Found on Selected Product!'
+                        });
+                    }
+                }, 'json');
+            }
+        });
+    },
+
+    this.initialize = function() {
+        this.registerEvents();
     }
-
-    $(document).ready(function() {
-        var app = new script();
-        app.initialize();
-    });
+}
+var script = new script;
+script.initialize();
     </script>
 </body>
 </html>

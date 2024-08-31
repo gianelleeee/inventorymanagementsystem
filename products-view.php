@@ -229,7 +229,7 @@ $category_arr_json = json_encode($category_arr);
                                     ${categoryOption}\
                                 </select>\
                             </div>\
-                            <input type="hidden" name="id" value="${id}">\
+                            <input type="hidden" name="pid" value="${id}">\
                             <input type="hidden" name="table" value="products">\
                             <input type="hidden" name="operation" value="update">\
                         </form>`,
@@ -238,7 +238,19 @@ $category_arr_json = json_encode($category_arr);
                                 var form = $('#editProductForm').serializeArray();
                                 var productName = form.find(input => input.name === 'product_name').value;
 
-                                $.post('database/update.php', form, function (data) {
+                                // Check if any changes were made
+                                if (productName === productDetails.product_name &&
+                                    $('#description').val() === productDetails.description &&
+                                    JSON.stringify($('#categorySelect').val().map(Number)) === JSON.stringify(curCategory)) {
+                                    BootstrapDialog.alert({
+                                        type: BootstrapDialog.TYPE_INFO,
+                                        message: 'No changes were made.'
+                                    });
+                                    return; // Exit without submitting
+                                }
+
+                                // If changes were made, submit the form
+                                $.post('database/update-product.php', form, function (data) {
                                     var message = data.success ? productName + ' successfully updated!' : 'Error Processing Your Request.';
 
                                     BootstrapDialog.alert({

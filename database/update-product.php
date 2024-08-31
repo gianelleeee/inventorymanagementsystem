@@ -77,9 +77,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ];
         }
     } else {
+        // Debugging information
+        $missingFields = [];
+        if (!isset($_POST['product_name'])) $missingFields[] = 'product_name';
+        if (!isset($_POST['description'])) $missingFields[] = 'description';
+        if (!isset($_POST['pid'])) $missingFields[] = 'pid';
+
         $response = [
             'success' => false,
-            'message' => 'Missing required fields.'
+            'message' => 'Missing required fields: ' . implode(', ', $missingFields)
         ];
     }
 } else {

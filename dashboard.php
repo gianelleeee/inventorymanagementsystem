@@ -193,15 +193,18 @@
                 }
                 labels.forEach(date => {
                     if (salesData[date]) {
+                        // Convert string to number for accurate aggregation
+                        const salesAmount = parseInt(salesData[date], 10) || 0;
                         if (!aggregatedData[product][date]) {
                             aggregatedData[product][date] = 0;
                         }
-                        aggregatedData[product][date] += salesData[date];
+                        aggregatedData[product][date] += salesAmount;
                     }
                 });
             }
         }
 
+        console.log('Aggregated Data:', aggregatedData); // Debugging line
         return aggregatedData;
     }
 
@@ -225,21 +228,30 @@
         } else {
             // Show sales for products in the selected category
             if (allProductData[category]) {
+                // Create a map to avoid duplicate aggregation
+                const categoryDataMap = {};
+
                 for (const [product, salesData] of Object.entries(allProductData[category])) {
-                    if (!dataToDisplay[product]) {
-                        dataToDisplay[product] = {};
+                    if (!categoryDataMap[product]) {
+                        categoryDataMap[product] = {};
                     }
                     uniqueLabels.forEach(date => {
                         if (salesData[date]) {
-                            if (!dataToDisplay[product][date]) {
-                                dataToDisplay[product][date] = 0;
+                            // Convert string to number for accurate aggregation
+                            const salesAmount = parseInt(salesData[date], 10) || 0;
+                            if (!categoryDataMap[product][date]) {
+                                categoryDataMap[product][date] = 0;
                             }
-                            dataToDisplay[product][date] += salesData[date];
+                            categoryDataMap[product][date] += salesAmount;
                         }
                     });
                 }
+
+                dataToDisplay = categoryDataMap;
             }
         }
+
+        console.log('Data to Display:', dataToDisplay); // Debugging line
 
         // Create datasets for each product
         for (const [product, salesData] of Object.entries(dataToDisplay)) {
@@ -298,6 +310,7 @@
     });
 
 </script>
+
 
 
 
