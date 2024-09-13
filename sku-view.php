@@ -117,28 +117,105 @@ $products_arr = json_encode($products_arr);
 
 
     <script>
-        var productsList = <?= $products_arr ?>;
-        
-        $(document).ready(function () {
-            // Handle deletion
-            $('.deleteCategory').on('click', function (e) {
-                e.preventDefault();
-                var cId = $(this).data('cid');
-                var categoryName = $(this).data('name');
+    var productsList = <?= $products_arr ?>;
+
+    $(document).ready(function () {
+        // Handle deletion
+        $('.deleteCategory').on('click', function (e) {
+            e.preventDefault();
+            var cId = $(this).data('cid');
+            var categoryName = $(this).data('name');
+
+            BootstrapDialog.confirm({
+                type: BootstrapDialog.TYPE_DANGER,
+                title: 'Delete Category',
+                message: 'Are you sure to delete <strong>' + categoryName + '</strong>?',
+                callback: function (isDelete) {
+                    if (isDelete) {
+                        $.ajax({
+                            method: 'POST',
+                            data: { id: cId, table: 'category' },
+                            url: 'database/delete.php',
+                            dataType: 'json',
+                            success: function (data) {
+                                var message = data.success ? categoryName + ' successfully deleted!' : 'Error Processing Your Request.';
+                                BootstrapDialog.alert({
+                                    type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
+                                    message: message,
+                                    callback: function () {
+                                        if (data.success) location.reload();
+                                    }
+                                });
+                            },
+                            error: function (jqXHR, textStatus) {
+                                BootstrapDialog.alert({
+                                    type: BootstrapDialog.TYPE_DANGER,
+                                    message: 'An error occurred: ' + textStatus
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        // Handle update
+        $('.updateCategory').on('click', function (e) {
+            e.preventDefault();
+            var cId = $(this).data('cid');
+            showEditDialog(cId);
+        });
+
+        // Show edit dialog
+        function showEditDialog(id) {
+            $.get('database/get-sku.php', { id: id }, function (categoryDetails) {
+                let curProducts = categoryDetails['products'].map(Number); // Ensure curProducts are numbers
+                let originalCategoryName = categoryDetails.category_name;
+                let originalProducts = [...curProducts]; // Copy of current products for comparison
+                let productOption = '';
+
+                for (const [pId, pName] of Object.entries(productsList)) {
+                    let selected = curProducts.includes(parseInt(pId)) ? 'selected' : '';
+                    productOption += `<option ${selected} value='${pId}'>${pName}</option>`;
+                }
 
                 BootstrapDialog.confirm({
-                    type: BootstrapDialog.TYPE_DANGER,
-                    title: 'Delete Category',
-                    message: 'Are you sure to delete <strong>' + categoryName + '</strong>?',
-                    callback: function (isDelete) {
-                        if (isDelete) {
+                    title: 'Update <strong>' + categoryDetails.category_name + '</strong>',
+                    message: `<form id="editCategoryForm">\
+                        <div class="appFormInputContainer">\
+                            <label for="category_name">Category Name</label>\
+                            <input type="text" class="appFormInput" name="category_name" value="${categoryDetails.category_name}" placeholder="Enter category name..." id="category_name">\
+                        </div>\
+                        <div class="appFormInputContainer">\
+                            <label for="productSelect">Products</label>\
+                            <select name="products[]" id="productSelect" multiple>\
+                            <option value="">Select Product</option>\
+                                ${productOption}\
+                            </select>\
+                        </div>\
+                        <input type="hidden" name="cid" value="${categoryDetails.id}"/>\
+                    </form>`,
+                    callback: function (isUpdate) {
+                        if (isUpdate) {
+                            let newCategoryName = $('#category_name').val();
+                            let newProducts = $('#productSelect').val().map(Number);
+
+                            // Check if there are any changes
+                            if (newCategoryName === originalCategoryName && arraysEqual(newProducts, originalProducts)) {
+                                BootstrapDialog.alert({
+                                    type: BootstrapDialog.TYPE_INFO,
+                                    message: 'No changes were made.'
+                                });
+                                return;
+                            }
+
                             $.ajax({
                                 method: 'POST',
-                                data: { id: cId, table: 'category' },
-                                url: 'database/delete.php',
+                                data: $('#editCategoryForm').serialize(),
+                                url: 'database/update-sku.php',
                                 dataType: 'json',
                                 success: function (data) {
-                                    var message = data.success ? categoryName + ' successfully deleted!' : 'Error Processing Your Request.';
+                                    var message = data.success ? data.message : 'Error updating category.';
                                     BootstrapDialog.alert({
                                         type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
                                         message: message,
@@ -157,73 +234,19 @@ $products_arr = json_encode($products_arr);
                         }
                     }
                 });
-            });
+            }, 'json');
+        }
 
-            // Handle update
-            $('.updateCategory').on('click', function (e) {
-                e.preventDefault();
-                var cId = $(this).data('cid');
-                showEditDialog(cId);
-            });
-
-            // Show edit dialog
-            function showEditDialog(id) {
-                $.get('database/get-sku.php', { id: id }, function (categoryDetails) {
-                    let curProducts = categoryDetails['products'].map(Number); // Ensure curProducts are numbers
-                    let productOption = '';
-
-                    for (const [pId, pName] of Object.entries(productsList)) {
-                        let selected = curProducts.includes(parseInt(pId)) ? 'selected' : '';
-                        productOption += `<option ${selected} value='${pId}'>${pName}</option>`;
-                    }
-
-                    BootstrapDialog.confirm({
-                        title: 'Update <strong>' + categoryDetails.category_name + '</strong>',
-                        message: `<form id="editCategoryForm">\
-                            <div class="appFormInputContainer">\
-                                <label for="category_name">Category Name</label>\
-                                <input type="text" class="appFormInput" name="category_name" value="${categoryDetails.category_name}" placeholder="Enter category name..." id="category_name">\
-                            </div>\
-                            <div class="appFormInputContainer">\
-                                <label for="productSelect">Products</label>\
-                                <select name="products[]" id="productSelect" multiple>\
-                                <option value="">Select Product</option>\
-                                    ${productOption}\
-                                </select>\
-                            </div>\
-                            <input type="hidden" name="cid" value="${categoryDetails.id}"/>\
-                        </form>`,
-                        callback: function (isUpdate) {
-                            if (isUpdate) {
-                                $.ajax({
-                                    method: 'POST',
-                                    data: $('#editCategoryForm').serialize(),
-                                    url: 'database/update-sku.php',
-                                    dataType: 'json',
-                                    success: function (data) {
-                                        var message = data.success ? data.message : 'Error updating category.';
-                                        BootstrapDialog.alert({
-                                            type: data.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
-                                            message: message,
-                                            callback: function () {
-                                                if (data.success) location.reload();
-                                            }
-                                        });
-                                    },
-                                    error: function (jqXHR, textStatus) {
-                                        BootstrapDialog.alert({
-                                            type: BootstrapDialog.TYPE_DANGER,
-                                            message: 'An error occurred: ' + textStatus
-                                        });
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }, 'json');
+        // Helper function to compare arrays
+        function arraysEqual(arr1, arr2) {
+            if (arr1.length !== arr2.length) return false;
+            for (let i = 0; i < arr1.length; i++) {
+                if (arr1[i] !== arr2[i]) return false;
             }
-        });
-    </script>
+            return true;
+        }
+    });
+</script>
 
 
 </body>

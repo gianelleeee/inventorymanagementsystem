@@ -6,22 +6,21 @@ $statuses = ['pending', 'complete', 'incomplete'];
 
 $results = [];
 
-//loop through statuses and query
-foreach($statuses as $status){
-    $stmt = $conn->prepare("SELECT COUNT(*) as status_count FROM order_product WHERE order_product.status='" . $status . "'");
-    $stmt->execute();
+// Loop through statuses and query
+foreach ($statuses as $status) {
+    $stmt = $conn->prepare("SELECT COUNT(*) as status_count FROM order_product WHERE order_product.status = ?");
+    $stmt->execute([$status]);
     $row = $stmt->fetch();
 
     $count = $row['status_count'];
-    
 
     $results[] = [
-        'name'=> strtoupper($status),
-        'y'=> (int)$count
+        'name' => strtoupper($status),
+        'y' => (int)$count
     ];
+}
 
-};
-
+// Fetch sales data by category and date
 $stmt = $conn->prepare("
     SELECT category.category_name, sales_product.date, SUM(sales_product.sales) AS total_sales
     FROM sales_product
@@ -126,7 +125,17 @@ foreach ($products as $product) {
     }
 }
 
-?>
+// Ensure all dates have data points for each category
+foreach ($categories as $category) {
+    foreach ($dates as $date) {
+        if (!isset($data_by_category[$category][$date])) {
+            $data_by_category[$category][$date] = 0;
+        }
+    }
+}
+
+// Sort dates to ensure consistent ordering
+sort($dates);
 
 
 ?>

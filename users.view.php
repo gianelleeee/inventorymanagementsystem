@@ -154,13 +154,26 @@ $users = include('database/show.php');
                         </form>',
                         callback: function(isUpdate) {
                             if (isUpdate) {
+                                var newFirstName = document.getElementById('firstName').value;
+                                var newLastName = document.getElementById('lastName').value;
+                                var newEmail = document.getElementById('emailUpdate').value;
+
+                                // Check if the values are the same as the original
+                                if (firstName === newFirstName && lastName === newLastName && email === newEmail) {
+                                    BootstrapDialog.alert({
+                                        type: BootstrapDialog.TYPE_INFO,
+                                        message: 'No changes were made.'
+                                    });
+                                    return; // Exit the callback if no changes were made
+                                }
+
                                 $.ajax({
                                     method: 'POST',
                                     data: {
                                         user_id: userId,
-                                        f_name: document.getElementById('firstName').value,
-                                        l_name: document.getElementById('lastName').value,
-                                        email: document.getElementById('emailUpdate').value
+                                        f_name: newFirstName,
+                                        l_name: newLastName,
+                                        email: newEmail
                                     },
                                     url: 'database/update_user.php',
                                     dataType: 'json',
@@ -185,6 +198,7 @@ $users = include('database/show.php');
                         }
                     });
                 }
+
             });
         };
 

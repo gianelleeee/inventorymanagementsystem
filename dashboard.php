@@ -136,58 +136,60 @@
 </script>
 
 
-    <script>
-        // Prepare the data for Chart.js
-        const labels1 = <?= json_encode($dates) ?>;
+<script>
+    // Prepare the data for Chart.js
+    const labels1 = <?= json_encode($dates) ?>;
 
-        const datasets = [
-            <?php foreach ($categories as $category): ?>
-            {
-                label: '<?= $category ?>',
-                data: <?= json_encode(array_values($data_by_category[$category])) ?>,
-                fill: false,
-                borderColor: '<?= sprintf('#%06X', mt_rand(0, 0xFFFFFF)) ?>',
-                tension: 0.1
-            },
-            <?php endforeach; ?>
-        ];
+    const datasets = [
+        <?php foreach ($categories as $category): ?>
+        {
+            label: '<?= $category ?>',
+            data: <?= json_encode(array_values(array_map(function($date) use ($data_by_category, $category) {
+                return isset($data_by_category[$category][$date]) ? $data_by_category[$category][$date] : 0;
+            }, $dates))) ?>,
+            fill: false,
+            borderColor: '<?= sprintf('#%06X', mt_rand(0, 0xFFFFFF)) ?>',
+            tension: 0.1
+        },
+        <?php endforeach; ?>
+    ];
 
-        // Create the line chart for categories
-        const ctx1 = document.getElementById('salesCategoryChart').getContext('2d');
-        new Chart(ctx1, {
-            type: 'line',
-            data: {
-                labels: labels1,
-                datasets: datasets
-            },
-            options: {
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Date'
-                        }
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: 'Total Sales'
-                        },
-                        beginAtZero: true
-                    }
-                },
-                plugins: {
+    // Create the line chart for categories
+    const ctx1 = document.getElementById('salesCategoryChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'line',
+        data: {
+            labels: labels1,
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                x: {
                     title: {
                         display: true,
-                        text: 'Sales per Category',
-                        font: {
-                            size: 24 // Adjust the font size here
-                        }
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Total Sales'
+                    },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Sales per Category',
+                    font: {
+                        size: 24 // Adjust the font size here
                     }
                 }
             }
-        });
-    </script>
+        }
+    });
+</script>
 
 <script>
     // Ensure allProductData and data_by_date are defined correctly
