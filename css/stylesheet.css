@@ -227,6 +227,7 @@ ul.dashboard_menu_lists li.menuActive{
     border: 1px solid #4d7326;
     padding-left: 20px;
     padding-bottom: 26px;
+    margin-top: 31px;
 }
 
 /*ADD USER  */
@@ -798,10 +799,19 @@ figure.highcharts-figure {
     border: 1px solid transparent;
 }
 
+
 .reportExportBtn:hover{
     border: 1px solid #649037;
     background: white;
     color: #649037;
+}
+
+.startDateLabel, .endDateLabel{
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-items: flex-start;
 }
 
 .reportType p{
@@ -860,6 +870,38 @@ figure.highcharts-figure {
 #categoryFilter{
     border: 1px solid #4d7326;
 }
+
+
+#permissions .moduleName{
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.moduleFunc{
+    text-align: center;
+    border: 1px solid #c1c1c1;
+    cursor: pointer;
+}
+
+.permission{
+    margin-bottom: 10px;
+    margin-top: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.permissionActive{
+    background: #649037;
+    color: #fff;
+    border: 1px solid #ffffff;
+    transition: 0.3s;
+}
+
+
+.access-denied {
+    margin: 50px;
+}
+
+
 
 /* Existing CSS */
 

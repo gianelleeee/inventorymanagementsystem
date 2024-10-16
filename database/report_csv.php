@@ -2,6 +2,10 @@
 $type = $_GET['report'];
 $file_name = '.xls';
 
+// Get the date range from the URL parameters
+$startDate = $_GET['start_date'] ?? null; // Optional start date
+$endDate = $_GET['end_date'] ?? null;     // Optional end date
+
 $mapping_filenames = [
     'category' => 'Category Report',
     'product' => 'Product Report',
@@ -20,17 +24,31 @@ header("Content-Type: application/vnd.ms-excel");
 include('connection.php');
 
 if ($type === 'product') {
-    // Query for product report with stocks used
-    $stmt = $conn->prepare("
+    // Query for product report with stocks used, filtered by date range if provided
+    $sql = "
         SELECT p.id, p.product_name, p.description, p.stock,
                COALESCE(SUM(sp.sales), 0) AS stocks_used,
                CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.created_at, p.updated_at
         FROM products p
         LEFT JOIN users u ON p.created_by = u.id
-        LEFT JOIN sales_product sp ON p.id = sp.product
-        GROUP BY p.id, p.product_name, p.description, p.stock, u.first_name, u.last_name, p.created_at, p.updated_at
-        ORDER BY p.created_at DESC
-    ");
+        LEFT JOIN sales_product sp ON p.id = sp.product";
+
+    // Add date filtering if dates are provided
+    if ($startDate && $endDate) {
+        $sql .= " WHERE p.created_at BETWEEN :startDate AND :endDate";
+    }
+
+    $sql .= " GROUP BY p.id, p.product_name, p.description, p.stock, u.first_name, u.last_name, p.created_at, p.updated_at
+              ORDER BY p.created_at DESC";
+
+    $stmt = $conn->prepare($sql);
+    
+    // Bind the date parameters if they exist
+    if ($startDate && $endDate) {
+        $stmt->bindParam(':startDate', $startDate);
+        $stmt->bindParam(':endDate', $endDate);
+    }
+
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
@@ -65,26 +83,104 @@ if ($type === 'product') {
 
         echo implode("\t", $row) . "\n";
     }
-}
- elseif ($type === 'delivery') {
-    // Query for delivery report
-    $stmt = $conn->prepare("
+} elseif ($type === 'category') {
+    // Query for category report with date filtering if provided
+    $sql = "
+        SELECT c.id, c.category_name, COUNT(p.id) AS product_count, 
+               CONCAT(u.first_name, ' ', u.last_name) AS created_by, c.created_at
+        FROM category c
+        LEFT JOIN productscategory pc ON c.id = pc.category
+        LEFT JOIN products p ON pc.product = p.id
+        LEFT JOIN users u ON c.created_by = u.id";
+
+    // Add date filtering if dates are provided
+    if ($startDate && $endDate) {
+        $sql .= " WHERE c.created_at BETWEEN :startDate AND :endDate";
+    }
+
+    $sql .= " GROUP BY c.id, c.category_name, u.first_name, u.last_name, c.created_at
+              ORDER BY c.created_at DESC;";
+
+    $stmt = $conn->prepare($sql);
+    
+    // Bind the date parameters if they exist
+    if ($startDate && $endDate) {
+        $stmt->bindParam(':startDate', $startDate);
+        $stmt->bindParam(':endDate', $endDate);
+    }
+
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+    $categories = $stmt->fetchAll();
+
+    // Define the formal header row for category report
+    $header = ['number' => 'No.', 'category_name' => 'Category Name', 'product_count' => 'Number of Products', 'created_by' => 'Created By', 'created_at' => 'Created At'];
+
+    // Output the header row
+    echo implode("\t", $header) . "\n";
+
+    $count = 1; // Initialize the counter
+    foreach ($categories as $category) {
+        // Map the data to the formal header names
+        $row = [
+            'number' => $count++,
+            'category_name' => $category['category_name'],
+            'product_count' => $category['product_count'],
+            'created_by' => $category['created_by'],
+            'created_at' => $category['created_at']
+        ];
+
+        // Detect double-quotes and escape any value that contains them
+        array_walk($row, function (&$str) {
+            $str = preg_replace("/\t/", "\\t", $str);
+            $str = preg_replace("/\r?\n/", "\\n", $str);
+            if (strstr($str, '"')) $str = '"' . str_replace('"', '""', $str) . '"';
+        });
+
+        echo implode("\t", $row) . "\n";
+    }
+}elseif ($type === 'delivery') {
+    // Query for delivery report, with date filtering if provided
+    $sql = "
         SELECT d.id, d.order_product_id, d.qty_received, d.date_received, d.date_updated,
                p.product_name, c.category_name
         FROM order_product_history d
         LEFT JOIN order_product op ON d.order_product_id = op.id
         LEFT JOIN productscategory pc ON op.product = pc.product
         LEFT JOIN products p ON pc.product = p.id
-        LEFT JOIN category c ON pc.category = c.id
-        ORDER BY d.date_received DESC;
-    ");
+        LEFT JOIN category c ON pc.category = c.id";
+
+    // Add date filtering if dates are provided
+    if ($startDate && $endDate) {
+        $sql .= " WHERE d.date_received BETWEEN :startDate AND :endDate";
+    }
+
+    $sql .= " ORDER BY d.date_received DESC;";
+
+    $stmt = $conn->prepare($sql);
+    
+    // Bind the date parameters if they exist
+    if ($startDate && $endDate) {
+        $stmt->bindParam(':startDate', $startDate);
+        $stmt->bindParam(':endDate', $endDate);
+    }
+
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
     $deliveries = $stmt->fetchAll();
 
     // Define the formal header row for delivery report
-    $header = ['number' => 'No.', 'product_name' => 'Product Name', 'category_name' => 'Category Name', 'qty_received' => 'Qty Received', 'date_received' => 'Date Received', 'date_updated' => 'Date Updated'];
+    $header = [
+        'number' => 'No.', 
+        'orderproductid' => 'Order Product ID', 
+        'product_name' => 'Product Name', 
+        'category_name' => 'Category Name', 
+        'qty_received' => 'Quantity Received', 
+        'date_received' => 'Date Received', 
+        'date_updated' => 'Date Updated'
+    ];
 
     // Output the header row
     echo implode("\t", $header) . "\n";
@@ -94,6 +190,7 @@ if ($type === 'product') {
         // Map the data to the formal header names
         $row = [
             'number' => $count++,
+            'orderproductid' => $delivery['order_product_id'],
             'product_name' => $delivery['product_name'],
             'category_name' => $delivery['category_name'],
             'qty_received' => $delivery['qty_received'],
@@ -111,28 +208,36 @@ if ($type === 'product') {
         echo implode("\t", $row) . "\n";
     }
 } elseif ($type === 'purchase') {
-    // Query for purchase report
-    $stmt = $conn->prepare("
-        SELECT op.batch, op.id, p.product_name, op.quantity_ordered, op.quantity_received,
-               c.category_name, op.status, CONCAT(u.first_name, ' ', u.last_name) AS ordered_by, 
-               op.created_at,
-               GROUP_CONCAT(CONCAT('Qty: ', oph.qty_received, ' on ', oph.date_received) ORDER BY oph.date_received DESC SEPARATOR ', ') AS delivery_history
+    // Query for purchase history report, with date filtering if provided
+    $sql = "
+        SELECT op.id, op.product, op.quantity_ordered, op.created_at, 
+               CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.product_name
         FROM order_product op
-        LEFT JOIN productscategory pc ON op.product = pc.product
-        LEFT JOIN products p ON pc.product = p.id
-        LEFT JOIN category c ON pc.category = c.id
-        LEFT JOIN users u ON op.created_by = u.id
-        LEFT JOIN order_product_history oph ON op.id = oph.order_product_id
-        GROUP BY op.batch, op.id, p.product_name, op.quantity_ordered, op.quantity_received, c.category_name, op.status, u.first_name, u.last_name, op.created_at
-        ORDER BY op.created_at DESC;
-    ");
+        LEFT JOIN products p ON op.product = p.id
+        LEFT JOIN users u ON op.created_by = u.id";
+
+    // Add date filtering if dates are provided
+    if ($startDate && $endDate) {
+        $sql .= " WHERE op.created_at BETWEEN :startDate AND :endDate";
+    }
+
+    $sql .= " ORDER BY op.created_at DESC;";
+
+    $stmt = $conn->prepare($sql);
+    
+    // Bind the date parameters if they exist
+    if ($startDate && $endDate) {
+        $stmt->bindParam(':startDate', $startDate);
+        $stmt->bindParam(':endDate', $endDate);
+    }
+
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
     $purchases = $stmt->fetchAll();
 
     // Define the formal header row for purchase report
-    $header = ['batch' => 'BATCH #', 'number' => '#', 'product_name' => 'PRODUCT', 'quantity_ordered' => 'QUANTITY ORDERED', 'quantity_received' => 'QUANTITY RECEIVED', 'category_name' => 'CATEGORY', 'status' => 'STATUS', 'ordered_by' => 'ORDERED BY', 'created_at' => 'CREATED DATE', 'delivery_history' => 'DELIVERY HISTORY'];
+    $header = ['number' => 'No.', 'product_name' => 'Product Name', 'qty_ordered' => 'Quantity Ordered', 'date_ordered' => 'Date Ordered', 'created_by' => 'Created By'];
 
     // Output the header row
     echo implode("\t", $header) . "\n";
@@ -141,16 +246,11 @@ if ($type === 'product') {
     foreach ($purchases as $purchase) {
         // Map the data to the formal header names
         $row = [
-            'batch' => $purchase['batch'],
             'number' => $count++,
             'product_name' => $purchase['product_name'],
-            'quantity_ordered' => $purchase['quantity_ordered'],
-            'quantity_received' => $purchase['quantity_received'],
-            'category_name' => $purchase['category_name'],
-            'status' => $purchase['status'],
-            'ordered_by' => $purchase['ordered_by'],
-            'created_at' => $purchase['created_at'],
-            'delivery_history' => $purchase['delivery_history']
+            'qty_ordered' => $purchase['quantity_ordered'],
+            'date_ordered' => $purchase['created_at'],
+            'created_by' => $purchase['user_name']
         ];
 
         // Detect double-quotes and escape any value that contains them
@@ -163,38 +263,49 @@ if ($type === 'product') {
         echo implode("\t", $row) . "\n";
     }
 } elseif ($type === 'sale') {
-    // Query for sales report with available stocks
-    $stmt = $conn->prepare("
-        SELECT sp.date, p.product_name, sp.sales, c.category_name, sp.available_stock,
-               CONCAT(u.first_name, ' ', u.last_name) AS created_by, sp.created_at
+    // Query for sales report, with date filtering if provided
+    $sql = "
+        SELECT sp.id, sp.product, sp.sales AS qty_sold, sp.date AS date_sold, 
+               CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.product_name
         FROM sales_product sp
-        LEFT JOIN productscategory pc ON sp.product = pc.product
-        LEFT JOIN products p ON pc.product = p.id
-        LEFT JOIN category c ON pc.category = c.id
-        LEFT JOIN users u ON sp.created_by = u.id
-        ORDER BY sp.date DESC
-    ");
+        LEFT JOIN products p ON sp.product = p.id
+        LEFT JOIN users u ON sp.created_by = u.id";
+
+    // Add date filtering if dates are provided
+    if ($startDate && $endDate) {
+        $sql .= " WHERE sp.date BETWEEN :startDate AND :endDate";
+    }
+
+    $sql .= " ORDER BY sp.date DESC;";
+
+    $stmt = $conn->prepare($sql);
+    
+    // Bind the date parameters if they exist
+    if ($startDate && $endDate) {
+        $stmt->bindParam(':startDate', $startDate);
+        $stmt->bindParam(':endDate', $endDate);
+    }
+
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
 
     $sales = $stmt->fetchAll();
 
-    // Define the header row, including the available stocks column
-    $header = ['date' => 'Date', 'product_name' => 'Product', 'sales' => 'Sales', 'available_stock' => 'Available Stock', 'category_name' => 'Category', 'created_by' => 'Added By', 'created_at' => 'Created Date'];
+    // Define the formal header row for sales report
+    $header = ['number' => 'No.', 'product_name' => 'Product Name', 'qty_sold' => 'Quantity Sold', 'date_sold' => 'Date Sold', 'created_by' => 'Created By'];
 
     // Output the header row
     echo implode("\t", $header) . "\n";
 
+    $count = 1; // Initialize the counter
     foreach ($sales as $sale) {
         // Map the data to the formal header names
         $row = [
-            'date' => $sale['date'],
+            'number' => $count++,
             'product_name' => $sale['product_name'],
-            'sales' => $sale['sales'],
-            'available_stock' => $sale['available_stock'],
-            'category_name' => $sale['category_name'],
-            'created_by' => $sale['created_by'],
-            'created_at' => $sale['created_at']
+            'qty_sold' => $sale['qty_sold'],
+            'date_sold' => $sale['date_sold'],
+            'created_by' => $sale['user_name']
         ];
 
         // Detect double-quotes and escape any value that contains them
@@ -204,8 +315,61 @@ if ($type === 'product') {
             if (strstr($str, '"')) $str = '"' . str_replace('"', '""', $str) . '"';
         });
 
-        // Output the data row
+        echo implode("\t", $row) . "\n";
+    }
+} elseif ($type === 'user') {
+    // Query for user report, with date filtering if provided
+    $sql = "
+        SELECT id, first_name, last_name, email, created_at
+        FROM users";
+
+    // Add date filtering if dates are provided
+    if ($startDate && $endDate) {
+        $sql .= " WHERE created_at BETWEEN :startDate AND :endDate";
+    }
+
+    $sql .= " ORDER BY created_at DESC;";
+
+    $stmt = $conn->prepare($sql);
+    
+    // Bind the date parameters if they exist
+    if ($startDate && $endDate) {
+        $stmt->bindParam(':startDate', $startDate);
+        $stmt->bindParam(':endDate', $endDate);
+    }
+
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC);
+
+    $users = $stmt->fetchAll();
+
+    // Define the formal header row for user report
+    $header = ['number' => 'No.', 'first_name' => 'First Name', 'last_name' => 'Last Name', 'email' => 'Email', 'created_at' => 'Created At'];
+
+    // Output the header row
+    echo implode("\t", $header) . "\n";
+
+    $count = 1; // Initialize the counter
+    foreach ($users as $user) {
+        // Map the data to the formal header names
+        $row = [
+            'number' => $count++,
+            'first_name' => $user['first_name'],
+            'last_name' => $user['last_name'],
+            'email' => $user['email'],
+            'created_at' => $user['created_at']
+        ];
+
+        // Detect double-quotes and escape any value that contains them
+        array_walk($row, function (&$str) {
+            $str = preg_replace("/\t/", "\\t", $str);
+            $str = preg_replace("/\r?\n/", "\\n", $str);
+            if (strstr($str, '"')) $str = '"' . str_replace('"', '""', $str) . '"';
+        });
+
         echo implode("\t", $row) . "\n";
     }
 }
+
+$conn = null; // Close the database connection
 ?>

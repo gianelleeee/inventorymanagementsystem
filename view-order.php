@@ -7,6 +7,49 @@ if (!isset($_SESSION['user'])) {
 
 include('database/connection.php');
 $user = $_SESSION['user'];
+
+// Check if the user has the "order_view" permission
+if (strpos($user['permissions'], 'order_view') === false) {
+    $hasOrderViewPermission = false;
+} else {
+    $hasOrderViewPermission = true;
+
+    // Prepare and execute the query if the user has access
+    $stmt = $conn->prepare("
+        SELECT 
+            order_product.id, 
+            order_product.product, 
+            products.product_name, 
+            order_product.quantity_ordered, 
+            order_product.quantity_received, 
+            users.first_name, 
+            users.last_name, 
+            category.category_name, 
+            order_product.status, 
+            order_product.created_at, 
+            order_product.batch,
+            IFNULL(users.first_name, 'User Deleted') as first_name, 
+            IFNULL(users.last_name, '') as last_name 
+        FROM 
+            order_product 
+        LEFT JOIN 
+            category ON order_product.category = category.id 
+        LEFT JOIN 
+            products ON order_product.product = products.id 
+        LEFT JOIN 
+            users ON order_product.created_by = users.id
+        ORDER BY 
+            order_product.created_at DESC
+    ");
+    $stmt->execute();
+    $purchase_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Organize data by batch
+    $data = [];
+    foreach ($purchase_orders as $purchase_order) {
+        $data[$purchase_order['batch']][] = $purchase_order;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +58,6 @@ $user = $_SESSION['user'];
     <title>IMS View Purchase History</title>
     <?php include('partials/header-script.php'); ?>
 </head>
-
 <body>
     <div id="dashboardMainContainer">
         <?php include('partials/sidebar.php'); ?>
@@ -26,97 +68,64 @@ $user = $_SESSION['user'];
                     <div class="row">
                         <div class="column column-12">
                             <h1 class="section_header"><i class="fa fa-list"></i> Purchase History</h1>
-                            <div class="section_content">
-                                <div class="poListContainers">
-                                    <div class="poList">
-                                        <?php
-                                       $stmt = $conn->prepare("
-                                            SELECT 
-                                                order_product.id, 
-                                                order_product.product, 
-                                                products.product_name, 
-                                                order_product.quantity_ordered, 
-                                                order_product.quantity_received, 
-                                                users.first_name, 
-                                                users.last_name, 
-                                                category.category_name, 
-                                                order_product.status, 
-                                                order_product.created_at, 
-                                                order_product.batch,
-                                                IFNULL(users.first_name, 'User Deleted') as first_name, 
-                                                IFNULL(users.last_name, '') as last_name 
-                                            FROM 
-                                                order_product 
-                                            LEFT JOIN 
-                                                category ON order_product.category = category.id 
-                                            LEFT JOIN 
-                                                products ON order_product.product = products.id 
-                                            LEFT JOIN 
-                                                users ON order_product.created_by = users.id
-                                            ORDER BY 
-                                                order_product.created_at DESC
-                                        ");
-                                        $stmt->execute();
-                                        $purchase_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                        
 
-                                        $data = [];
-                                        foreach($purchase_orders as $purchase_order){
-                                            $data[$purchase_order['batch']][] = $purchase_order;
-                                        }
-                                        ?>
-
-                                        <?php
-                                        foreach($data as $batch_id => $batch_pos){
-                                        ?>
-                                        <div class="poList" id="container-<?= $batch_id ?>">
-                                            <p>Batch #: <?= $batch_id ?></p>
-                                            <table>
-                                                <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Product</th>
-                                                        <th>Quantity Ordered</th>
-                                                        <th>Quantity Received</th>
-                                                        <th>Category</th>
-                                                        <th>Status</th>
-                                                        <th>Ordered By</th>
-                                                        <th>Created Date</th>
-                                                        <th>Delivery History</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php
-                                                        foreach($batch_pos as $index => $batch_po){
-                                                    ?>
-                                                    <tr>
-                                                        <td><?= $index + 1 ?></td>
-                                                        <td class="po_product"><?= $batch_po['product_name']?></td>
-                                                        <td class="po_qty_ordered"><?= $batch_po['quantity_ordered']?></td>
-                                                        <td class="po_qty_received"><?= $batch_po['quantity_received']?></td>
-                                                        <td class="po_category"><?= $batch_po['category_name']?></td>
-                                                        <td class="po_status"><span class="po-badge po-badge-<?= $batch_po['status']?>"><?= $batch_po['status']?></span></td>
-                                                        <td><?= $batch_po['first_name'] . ' ' . $batch_po['last_name']?></td>
-                                                        <td>
-                                                            <?= $batch_po['created_at']?>
-                                                            <input type="hidden" class="po_qty_row_id" value="<?= $batch_po['id']?>">
-                                                            <input type="hidden" class="po_qty_productid" value="<?= $batch_po['product']?>">
-                                                        </td>
-                                                        <td>
-                                                            <button class="appDeliveryHistoryBtn" data-id="<?= $batch_po['id']?>">Delivery History</button>
-                                                        </td>
-                                                    </tr>
-                                                    <?php } ?>
-                                                </tbody>
-                                            </table>
-                                            <div class="poOrderUpdateBtnContainer alignRight">
-                                                <button class="orderBtn updatePoBtn" data-id="<?= $batch_id?>">Update</button>
-                                            </div>
+                            <!-- Check if the user has permission -->
+                            <?php if (!$hasOrderViewPermission): ?>
+                                <div style="margin: 50px;">
+                                    <h2>You have no access to this page.</h2>
+                                </div>
+                            <?php else: ?>
+                                <div class="section_content">
+                                    <div class="poListContainers">
+                                        <div class="poList">
+                                            <?php foreach ($data as $batch_id => $batch_pos): ?>
+                                                <div class="poList" id="container-<?= $batch_id ?>">
+                                                    <p>Batch #: <?= $batch_id ?></p>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Product</th>
+                                                                <th>Quantity Ordered</th>
+                                                                <th>Quantity Received</th>
+                                                                <th>Category</th>
+                                                                <th>Status</th>
+                                                                <th>Ordered By</th>
+                                                                <th>Created Date</th>
+                                                                <th>Delivery History</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <?php foreach ($batch_pos as $index => $batch_po): ?>
+                                                                <tr>
+                                                                    <td><?= $index + 1 ?></td>
+                                                                    <td class="po_product"><?= $batch_po['product_name'] ?></td>
+                                                                    <td class="po_qty_ordered"><?= $batch_po['quantity_ordered'] ?></td>
+                                                                    <td class="po_qty_received"><?= $batch_po['quantity_received'] ?></td>
+                                                                    <td class="po_category"><?= $batch_po['category_name'] ?></td>
+                                                                    <td class="po_status"><span class="po-badge po-badge-<?= $batch_po['status'] ?>"><?= $batch_po['status'] ?></span></td>
+                                                                    <td><?= $batch_po['first_name'] . ' ' . $batch_po['last_name'] ?></td>
+                                                                    <td>
+                                                                        <?= $batch_po['created_at'] ?>
+                                                                        <input type="hidden" class="po_qty_row_id" value="<?= $batch_po['id'] ?>">
+                                                                        <input type="hidden" class="po_qty_productid" value="<?= $batch_po['product'] ?>">
+                                                                    </td>
+                                                                    <td>
+                                                                        <button class="appDeliveryHistoryBtn" data-id="<?= $batch_po['id'] ?>">Delivery History</button>
+                                                                    </td>
+                                                                </tr>
+                                                            <?php endforeach; ?>
+                                                        </tbody>
+                                                    </table>
+                                                    <div class="poOrderUpdateBtnContainer alignRight">
+                                                        <button class="orderBtn updatePoBtn" data-id="<?= $batch_id ?>">Update</button>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
                                         </div>
-                                        <?php } ?>
                                     </div>
                                 </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -131,12 +140,22 @@ $user = $_SESSION['user'];
         var vm = this;
 
         this.registerEvents = function() {
-            document.addEventListener('click', function(e){
+            document.addEventListener('click', function(e) {
                 var targetElement = e.target;
                 var classList = targetElement.classList;
 
-                if(classList.contains('updatePoBtn')){
+                // Check if the user has update permissions
+                if (classList.contains('updatePoBtn')) {
                     e.preventDefault();
+
+                    // Permission check for updating orders
+                    if (!<?= json_encode(in_array('order_update', explode(',', $user['permissions']))) ?>) {
+                        BootstrapDialog.alert({
+                            type: BootstrapDialog.TYPE_WARNING,
+                            message: 'Access Denied: You do not have permission to update orders.'
+                        });
+                        return; // Exit the function if the user does not have permission
+                    }
 
                     var batchNumber = targetElement.dataset.id;
                     var batchNumberContainer = 'container-' + batchNumber;
@@ -152,7 +171,7 @@ $user = $_SESSION['user'];
 
                     var poListArr = [];
 
-                    for(var i = 0; i < productList.length; i++){
+                    for (var i = 0; i < productList.length; i++) {
                         poListArr.push({
                             name: productList[i].innerText,
                             qtyOrdered: qtyOrderedList[i].innerText,
@@ -167,7 +186,7 @@ $user = $_SESSION['user'];
 
                     // Store in HTML
                     var poListHtml = '\
-                        <table id="formTable_'+ batchNumber +'">\
+                        <table id="formTable_' + batchNumber + '">\
                             <thead>\
                                 <tr>\
                                     <th>Product Name</th>\
@@ -184,16 +203,16 @@ $user = $_SESSION['user'];
                         var disabledInput = poList.status === 'Complete' ? 'disabled' : '';
                         poListHtml += '\
                             <tr>\
-                                <td class="po_product alignLeft">'+ poList.name +'</td>\
-                                <td class="po_qty_ordered">'+ poList.qtyOrdered +'</td>\
-                                <td class="po_qty_received">'+ poList.qtyReceived +'</td>\
-                                <td class="po_qty_delivered"><input type="number" value="0" min="0" '+ disabledInput +'/></td>\
-                                <td class="po_category alignLeft">'+ poList.category +'</td>\
-                                <td class="po_status">'+ poList.status +'</td>\
-                                <input type="hidden" class="po_qty_row_id" value="'+ poList.id +'">\
-                                <input type="hidden" class="po_qty_pid" value="'+ poList.pid +'">\
-                                <input type="hidden" class="po_qty_ordered_hidden" value="'+ poList.qtyOrdered +'">\
-                                <input type="hidden" class="po_qty_received_hidden" value="'+ poList.qtyReceived +'">\
+                                <td class="po_product alignLeft">' + poList.name + '</td>\
+                                <td class="po_qty_ordered">' + poList.qtyOrdered + '</td>\
+                                <td class="po_qty_received">' + poList.qtyReceived + '</td>\
+                                <td class="po_qty_delivered"><input type="number" value="0" min="0" ' + disabledInput + '/></td>\
+                                <td class="po_category alignLeft">' + poList.category + '</td>\
+                                <td class="po_status">' + poList.status + '</td>\
+                                <input type="hidden" class="po_qty_row_id" value="' + poList.id + '">\
+                                <input type="hidden" class="po_qty_pid" value="' + poList.pid + '">\
+                                <input type="hidden" class="po_qty_ordered_hidden" value="' + poList.qtyOrdered + '">\
+                                <input type="hidden" class="po_qty_received_hidden" value="' + poList.qtyReceived + '">\
                             </tr>\
                         ';
                     });
@@ -202,10 +221,10 @@ $user = $_SESSION['user'];
 
                     BootstrapDialog.confirm({
                         type: BootstrapDialog.TYPE_PRIMARY,
-                        title: 'Update Purchase Order: Batch #: <strong>'+ batchNumber +'</strong>',
+                        title: 'Update Purchase Order: Batch #: <strong>' + batchNumber + '</strong>',
                         message: poListHtml,
-                        callback: function (toAdd) {
-                            if(toAdd){
+                        callback: function(toAdd) {
+                            if (toAdd) {
                                 var formTableContainer = 'formTable_' + batchNumber;
                                 var qtyReceivedList = document.querySelectorAll('#' + formTableContainer + ' .po_qty_received');
                                 var qtyDeliveredList = document.querySelectorAll('#' + formTableContainer + ' .po_qty_delivered input');
@@ -220,14 +239,14 @@ $user = $_SESSION['user'];
                                 var changesMade = false;
                                 var valid = true;
 
-                                for(var i = 0; i < qtyDeliveredList.length; i++){
+                                for (var i = 0; i < qtyDeliveredList.length; i++) {
                                     var deliveredQty = qtyDeliveredList[i].value;
                                     var orderedQty = qtyOrdered[i].innerText;
                                     var receivedQty = qtyReceivedList[i].innerText;
                                     var status = statusList[i].innerText;
 
                                     // Check if the delivered quantity is negative
-                                    if(parseInt(deliveredQty) < 0) {
+                                    if (parseInt(deliveredQty) < 0) {
                                         valid = false;
                                         BootstrapDialog.alert({
                                             type: BootstrapDialog.TYPE_WARNING,
@@ -237,7 +256,7 @@ $user = $_SESSION['user'];
                                     }
 
                                     // Check if the quantity received exceeds the quantity ordered
-                                    if(parseInt(receivedQty) > parseInt(orderedQty)) {
+                                    if (parseInt(receivedQty) > parseInt(orderedQty)) {
                                         valid = false;
                                         BootstrapDialog.alert({
                                             type: BootstrapDialog.TYPE_WARNING,
@@ -247,7 +266,7 @@ $user = $_SESSION['user'];
                                     }
 
                                     // Check if there's any change
-                                    if(deliveredQty != 0 || orderedQty != qtyOrderedHidden[i].value || receivedQty != qtyReceivedHidden[i].value) {
+                                    if (deliveredQty != 0 || orderedQty != qtyOrderedHidden[i].value || receivedQty != qtyReceivedHidden[i].value) {
                                         changesMade = true;
                                     }
 
@@ -261,8 +280,8 @@ $user = $_SESSION['user'];
                                     });
                                 }
 
-                                if(valid){
-                                    if(changesMade){
+                                if (valid) {
+                                    if (changesMade) {
                                         $.ajax({
                                             type: 'POST',
                                             url: 'database/update-order.php',
@@ -275,7 +294,7 @@ $user = $_SESSION['user'];
                                                     type: result.success ? BootstrapDialog.TYPE_SUCCESS : BootstrapDialog.TYPE_DANGER,
                                                     message: result.message
                                                 });
-                                                if(result.success) {
+                                                if (result.success) {
                                                     setTimeout(function() {
                                                         window.location.reload();
                                                     }, 2000);
@@ -299,58 +318,60 @@ $user = $_SESSION['user'];
                         }
                     });
                 }
-                 // If delivery history button is clicked
-            if(classList.contains('appDeliveryHistoryBtn')){
-                let id = targetElement.dataset.id;
 
-                $.get('database/view-delivery-history.php', {id: id}, function(data){
-                    if(data.length){
-                        rows = '';
-                        data.forEach((row, id) => {
-                            rows += '\
-                            <tr>\
-                                    <td>'+ (id + 1) +'</td>\
-                                    <td>'+ (new Date(row['date_received'])).toDateString() +'</td>\
-                                    <td>'+ row['qty_received'] +'</td>\
-                                </tr>\
-                        ';
-                        });
+                // If delivery history button is clicked
+                if (classList.contains('appDeliveryHistoryBtn')) {
+                    let id = targetElement.dataset.id;
 
-                        deliveryHistoryHtml = '<table class="deliveryHistoryTable">\
-                            <thead>\
+                    $.get('database/view-delivery-history.php', { id: id }, function(data) {
+                        if (data.length) {
+                            rows = '';
+                            data.forEach((row, id) => {
+                                rows += '\
                                 <tr>\
-                                    <th>#</th>\
-                                    <th>Date Received</th>\
-                                    <th>Quantity Delivered</th>\
-                                </tr>\
-                            </thead>\
-                            <tbody>'+ rows+'</tbody>\
-                        </table>\
-                        ';
+                                        <td>' + (id + 1) + '</td>\
+                                        <td>' + (new Date(row['date_received'])).toDateString() + '</td>\
+                                        <td>' + row['qty_received'] + '</td>\
+                                    </tr>\
+                            ';
+                            });
 
-                        BootstrapDialog.show({
-                            title: '<strong>Delivery History</strong>',
-                            type: BootstrapDialog.TYPE_PRIMARY,
-                            message: deliveryHistoryHtml
-                        })
-                    } else {
-                        BootstrapDialog.alert({
-                            title: '<strong>No Delivery History</strong>',
-                            type: BootstrapDialog.TYPE_INFO,
-                            message: 'No Delivery History Found on Selected Product!'
-                        });
-                    }
-                }, 'json');
-            }
-        });
-    },
+                            deliveryHistoryHtml = '<table class="deliveryHistoryTable">\
+                                <thead>\
+                                    <tr>\
+                                        <th>#</th>\
+                                        <th>Date Received</th>\
+                                        <th>Quantity Delivered</th>\
+                                    </tr>\
+                                </thead>\
+                                <tbody>' + rows + '</tbody>\
+                            </table>\
+                            ';
 
-    this.initialize = function() {
-        this.registerEvents();
+                            BootstrapDialog.show({
+                                title: '<strong>Delivery History</strong>',
+                                type: BootstrapDialog.TYPE_PRIMARY,
+                                message: deliveryHistoryHtml
+                            });
+                        } else {
+                            BootstrapDialog.alert({
+                                title: '<strong>No Delivery History</strong>',
+                                type: BootstrapDialog.TYPE_INFO,
+                                message: 'No Delivery History Found on Selected Product!'
+                            });
+                        }
+                    }, 'json');
+                }
+            });
+        },
+
+        this.initialize = function() {
+            this.registerEvents();
+        }
     }
-}
-var script = new script;
-script.initialize();
-    </script>
+    var script = new script;
+    script.initialize();
+</script>
+
 </body>
 </html>

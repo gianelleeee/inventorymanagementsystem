@@ -1,12 +1,21 @@
 <?php
-    // Start the session
-    session_start();
-    if(!isset($_SESSION['user'])) header('location: index.php');
+// Start the session
+session_start();
+if (!isset($_SESSION['user'])) {
+    header('location: index.php');
+}
 
-    $user = $_SESSION['user'];
+$user = $_SESSION['user'];
 
-    // Get graph data - purchase order by status
+// Check if the user has the 'dashboard_view' permission
+if (!in_array('dashboard_view', explode(',', $user['permissions']))) {
+    // User does not have access
+    $accessDenied = true;
+} else {
+    // User has access, continue to get graph data
     include('database/po_status_pie_graph.php');
+    $accessDenied = false; // Set accessDenied to false when the user has permission
+}
 ?>
 
 <!DOCTYPE html>
@@ -23,6 +32,11 @@
         <div class="dashboard_content_container" id="dashboard_content_container">
             <?php include('partials/topnav.php') ?>
             <div class="dashboard_content">
+            <?php if ($accessDenied): ?>
+                <div style="margin: 50px;">
+                    <h2>You have no access to this page.</h2>
+                </div>
+            <?php else: ?>
                 <div class="dashboard_content_main">
                      <div>
                         <canvas id="salesCategoryChart" width="400" height="200"></canvas>
@@ -47,6 +61,7 @@
                     <div>
                     </div>
                 </div>
+            <?php endif; ?>
             </div>
         </div>
     </div>

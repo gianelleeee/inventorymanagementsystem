@@ -6,20 +6,26 @@ if (!isset($_SESSION['user'])) {
 }
 
 include('database/connection.php');
-$show_table = 'products';
 $user = $_SESSION['user'];
-$products = include('database/show.php');
 
-$show_table = 'category';
-$category_list = include('database/show.php');
+// Check user permissions
+if (!in_array('product_view', explode(',', $user['permissions']))) {
+    $accessDenied = true; // Set access denied flag
+} else {
+    $show_table = 'products';
+    $products = include('database/show.php');
 
-$category_arr = [];
+    $show_table = 'category';
+    $category_list = include('database/show.php');
 
-foreach ($category_list as $category) {
-    $category_arr[$category['id']] = $category['category_name'];
+    $category_arr = [];
+
+    foreach ($category_list as $category) {
+        $category_arr[$category['id']] = $category['category_name'];
+    }
+
+    $category_arr_json = json_encode($category_arr);
 }
-
-$category_arr_json = json_encode($category_arr);
 ?>
 
 <!DOCTYPE html>
@@ -39,95 +45,101 @@ $category_arr_json = json_encode($category_arr);
                         <div class="column column-12">
                             <h1 class="section_header"><i class="fa fa-list"></i> List of Products</h1>
                             <div class="section_content">
-                                <div class="filter_section">
-                                    <div class="category_filter">
-                                        <label for="category_filter">Filter by Category:</label>
-                                        <select id="category_filter">
-                                            <option value="all">All Categories</option>
-                                            <?php foreach ($category_list as $category) { ?>
-                                                <option value="<?= $category['id'] ?>"><?= $category['category_name'] ?></option>
-                                            <?php } ?>
-                                        </select>
+                                <?php if (isset($accessDenied) && $accessDenied): ?>
+                                    <div style="margin: 50px;">
+                                        <h2>You have no access to this page.</h2>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="filter_section">
+                                        <div class="category_filter">
+                                            <label for="category_filter">Filter by Category:</label>
+                                            <select id="category_filter">
+                                                <option value="all">All Categories</option>
+                                                <?php foreach ($category_list as $category) { ?>
+                                                    <option value="<?= $category['id'] ?>"><?= $category['category_name'] ?></option>
+                                                <?php } ?>
+                                            </select>
+                                        </div>
+
+                                        <div class="search_box">
+                                            <label for="product_search">Search Products:</label>
+                                            <input type="text" id="product_search" placeholder="Search by product name or description">
+                                            <button id="search_button">Search</button>
+                                        </div>
                                     </div>
 
-                                    <div class="search_box">
-                                        <label for="product_search">Search Products:</label>
-                                        <input type="text" id="product_search" placeholder="Search by product name or description">
-                                        <button id="search_button">Search</button>
-                                    </div>
-                                </div>
-
-                                <div class="users">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Product Name</th>
-                                                <th>Description</th>
-                                                <th width="10%">Category</th>
-                                                <th>Available Stock</th>
-                                                <th>Stocks Used</th>
-                                                <th>Created By</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($products as $index => $product) { 
-                                                // Fetch total stocks used for this product
-                                                $pid = $product['id'];
-                                                $stmt = $conn->prepare("SELECT SUM(sales_product.sales) as total_sales FROM sales_product 
-                                                                        INNER JOIN productscategory ON sales_product.product = productscategory.product 
-                                                                        WHERE productscategory.product = :product_id");
-                                                $stmt->bindParam(':product_id', $pid, PDO::PARAM_INT);
-                                                $stmt->execute();
-                                                $result = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                $stocks_used = $result['total_sales'] ? $result['total_sales'] : 0;
-                                                
-                                                // Fetch product categories
-                                                $stmt = $conn->prepare("SELECT category.id, category.category_name FROM category 
-                                                                        INNER JOIN productscategory ON productscategory.category = category.id 
-                                                                        WHERE productscategory.product = :product_id");
-                                                $stmt->bindParam(':product_id', $pid, PDO::PARAM_INT);
-                                                $stmt->execute();
-                                                $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                            ?>
-                                                <tr data-category="<?= implode(',', array_column($categories, 'id')) ?>">
-                                                    <td><?= $index + 1 ?></td>
-                                                    <td class="productName"><?= $product['product_name'] ?></td>
-                                                    <td class="productDescription"><?= $product['description'] ?></td>
-                                                    <td class="productCategory"><?= implode(', ', array_column($categories, 'category_name')) ?></td>
-                                                    <td class="productName"><?= number_format($product['stock']) ?></td>
-                                                    <td><?= number_format($stocks_used) ?></td>
-                                                    <td>
-                                                        <?php
-                                                        $created_by_id = $product['created_by'];
-                                                        $stmt = $conn->prepare("SELECT * FROM users WHERE id = :created_by_id");
-                                                        $stmt->bindParam(':created_by_id', $created_by_id, PDO::PARAM_INT);
-                                                        $stmt->execute();
-                                                        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-                                                        if ($row) {
-                                                            $created_by_name = $row['first_name'] . ' ' . $row['last_name'];
-                                                        } else {
-                                                            $created_by_name = 'User Deleted';
-                                                        }
-                                                        echo $created_by_name;
-                                                        ?>
-                                                    </td>
-                                                    <td><?= date('M d, Y @ h:i:s A', strtotime($product['created_at'])) ?></td>
-                                                    <td><?= date('M d, Y @ h:i:s A', strtotime($product['updated_at'])) ?></td>
-                                                    <td>
-                                                        <a href="#" class="updateProduct" data-pid="<?= $product['id'] ?>"><i class="fa fa-pencil"></i> Edit</a>
-                                                        <a href="#" class="deleteProduct" data-name="<?= $product['product_name'] ?>" data-pid="<?= $product['id'] ?>"><i class="fa fa-trash"></i> Delete</a>
-                                                    </td>
+                                    <div class="users">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Product Name</th>
+                                                    <th>Description</th>
+                                                    <th width="10%">Category</th>
+                                                    <th>Available Stock</th>
+                                                    <th>Stocks Used</th>
+                                                    <th>Created By</th>
+                                                    <th>Created At</th>
+                                                    <th>Updated At</th>
+                                                    <th>Action</th>
                                                 </tr>
-                                            <?php } ?>
-                                        </tbody>
-                                    </table>
-                                    <p class="product_count"><?= count($products) ?> Products</p>
-                                </div>
-                                <div id="no_products_message" style="display: none; color: red;">There are no products added to this category.</div>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($products as $index => $product) { 
+                                                    // Fetch total stocks used for this product
+                                                    $pid = $product['id'];
+                                                    $stmt = $conn->prepare("SELECT SUM(sales_product.sales) as total_sales FROM sales_product 
+                                                                            INNER JOIN productscategory ON sales_product.product = productscategory.product 
+                                                                            WHERE productscategory.product = :product_id");
+                                                    $stmt->bindParam(':product_id', $pid, PDO::PARAM_INT);
+                                                    $stmt->execute();
+                                                    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+                                                    $stocks_used = $result['total_sales'] ? $result['total_sales'] : 0;
+                                                    
+                                                    // Fetch product categories
+                                                    $stmt = $conn->prepare("SELECT category.id, category.category_name FROM category 
+                                                                            INNER JOIN productscategory ON productscategory.category = category.id 
+                                                                            WHERE productscategory.product = :product_id");
+                                                    $stmt->bindParam(':product_id', $pid, PDO::PARAM_INT);
+                                                    $stmt->execute();
+                                                    $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                ?>
+                                                    <tr data-category="<?= implode(',', array_column($categories, 'id')) ?>">
+                                                        <td><?= $index + 1 ?></td>
+                                                        <td class="productName"><?= $product['product_name'] ?></td>
+                                                        <td class="productDescription"><?= $product['description'] ?></td>
+                                                        <td class="productCategory"><?= implode(', ', array_column($categories, 'category_name')) ?></td>
+                                                        <td class="productName"><?= number_format($product['stock']) ?></td>
+                                                        <td><?= number_format($stocks_used) ?></td>
+                                                        <td>
+                                                            <?php
+                                                            $created_by_id = $product['created_by'];
+                                                            $stmt = $conn->prepare("SELECT * FROM users WHERE id = :created_by_id");
+                                                            $stmt->bindParam(':created_by_id', $created_by_id, PDO::PARAM_INT);
+                                                            $stmt->execute();
+                                                            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                                                            if ($row) {
+                                                                $created_by_name = $row['first_name'] . ' ' . $row['last_name'];
+                                                            } else {
+                                                                $created_by_name = 'User Deleted';
+                                                            }
+                                                            echo $created_by_name;
+                                                            ?>
+                                                        </td>
+                                                        <td><?= date('M d, Y @ h:i:s A', strtotime($product['created_at'])) ?></td>
+                                                        <td><?= date('M d, Y @ h:i:s A', strtotime($product['updated_at'])) ?></td>
+                                                        <td>
+                                                            <a href="#" class="updateProduct" data-pid="<?= $product['id'] ?>"><i class="fa fa-pencil"></i> Edit</a>
+                                                            <a href="#" class="deleteProduct" data-name="<?= $product['product_name'] ?>" data-pid="<?= $product['id'] ?>"><i class="fa fa-trash"></i> Delete</a>
+                                                        </td>
+                                                    </tr>
+                                                <?php } ?>
+                                            </tbody>
+                                        </table>
+                                        <p class="product_count"><?= count($products) ?> Products</p>
+                                    </div>
+                                    <div id="no_products_message" style="display: none; color: red;">There are no products added to this category.</div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -147,6 +159,15 @@ $category_arr_json = json_encode($category_arr);
                     e.preventDefault();
                     var pId = $(this).data('pid');
                     var pName = $(this).data('name');
+
+                    // Check if the user has delete permissions
+                    if (!<?= json_encode(in_array('product_delete', explode(',', $user['permissions']))) ?>) {
+                        BootstrapDialog.alert({
+                            type: BootstrapDialog.TYPE_WARNING,
+                            message: 'Access Denied: You do not have permission to delete products.'
+                        });
+                        return; // Exit the function if the user does not have permission
+                    }
 
                     BootstrapDialog.confirm({
                         type: BootstrapDialog.TYPE_DANGER,
@@ -189,11 +210,21 @@ $category_arr_json = json_encode($category_arr);
                 });
             }
 
+
             // Function to handle update
             function attachUpdateEvent() {
                 $('.updateProduct').off('click').on('click', function (e) {
                     e.preventDefault();
                     var pId = $(this).data('pid');
+
+                    // Check if the user has edit permissions
+                    if (!<?= json_encode(in_array('product_edit', explode(',', $user['permissions']))) ?>) {
+                        BootstrapDialog.alert({
+                            type: BootstrapDialog.TYPE_WARNING,
+                            message: 'Access Denied: You do not have permission to edit products.'
+                        });
+                        return; // Exit the function if the user does not have permission
+                    }
 
                     // Call function to show update dialog
                     showEditDialog(pId);
@@ -273,7 +304,7 @@ $category_arr_json = json_encode($category_arr);
                         }
                     });
                 }, 'json');
-            }
+}
 
             // Filter by category
             $('#category_filter').on('change', function () {

@@ -1,24 +1,23 @@
 <?php
 // Start the session
-    session_start();
-    if (!isset($_SESSION['user'])) {
-        header('Location: index.php');
-        exit();
-    }
+session_start();
+if (!isset($_SESSION['user'])) {
+    header('Location: index.php');
+    exit();
+}
 
-    $_SESSION['table'] = 'products';
-    $_SESSION['redirect_to'] = 'products-add.php';
+$user = $_SESSION['user'];
 
-    $user = $_SESSION['user'];
+// Check if the user has the 'product_add' permission
+$hasPermission = in_array('product_add', explode(',', $user['permissions']));
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
     <title>IMS Add Product</title>
-
     <?php include('partials/header-script.php'); ?>
-    </head>
+</head>
 <body>
     <div id="dashboardMainContainer">
         <?php include('partials/sidebar.php'); ?>
@@ -30,8 +29,9 @@
                         <div class="column column-12">
                             <h1 class="section_header"> <i class="fa fa-plus"></i> Add Product</h1>
                             
+                            <?php if ($hasPermission): ?>
                                 <div id="userAddFormContainer">
-                                    <form action="database/add.php" method="POST" class="appForm" id="userAddForm">
+                                    <form action="database/add-products.php" method="POST" class="appForm" id="userAddForm">
                                         <div class="appFormInputContainer">
                                             <label for="product_name">Product Name</label>
                                             <input type="text" class="appFormInput" name="product_name" placeholder="Enter product name..." id="product_name" required>
@@ -41,15 +41,15 @@
                                             <textarea class="appFormInput productTextAreaInput" name="description" placeholder="Enter product description..." id="description"></textarea>
                                         </div>
                                         <div class="appFormInputContainer">
-                                            <label for="description">Category</label>
+                                            <label for="categorySelect">Category</label>
                                             <select name="category[]" id="categorySelect" required>
                                                 <option value="">Select Category</option>
                                                 <?php
                                                     $show_table = 'category';
                                                     $category = include('database/show.php');
 
-                                                    foreach($category as $category){
-                                                        echo "<option value=' ". $category['id'] ."'> ".$category['category_name'] ."</option>";
+                                                    foreach ($category as $cat) {
+                                                        echo "<option value='" . $cat['id'] . "'>" . $cat['category_name'] . "</option>";
                                                     }
                                                 ?>
                                             </select>
@@ -68,6 +68,11 @@
                                     </div>
                                     <?php unset($_SESSION['response']); } ?>
                                 </div>
+                            <?php else: ?>
+                                <div style="margin: 50px;">
+                                    <h2>You have no access to this page.</h2>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

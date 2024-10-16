@@ -7,6 +7,10 @@ if (!isset($_SESSION['user'])) {
 
 include('database/connection.php');
 $user = $_SESSION['user'];
+
+// Check if user has 'stock_view' permission
+$has_stock_view_permission = in_array('stock_view', explode(',', $user['permissions']));
+
 ?>
 
 <!DOCTYPE html>
@@ -29,89 +33,89 @@ $user = $_SESSION['user'];
                             <div class="section_content">
                                 <div class="soListContainers">
                                     <div class="soList">
-                                    <?php
-                                        // Updated SQL query to get available_stock directly from sales_product
-                                        $stmt = $conn->prepare("
-                                            SELECT 
-                                                sales_product.id, 
-                                                sales_product.date, 
-                                                sales_product.product, 
-                                                products.product_name, 
-                                                sales_product.available_stock, 
-                                                sales_product.sales, 
-                                                COALESCE(CONCAT(users.first_name, ' ', users.last_name), 'User Deleted') AS full_name, 
-                                                category.category_name, 
-                                                sales_product.created_at
-                                            FROM 
-                                                sales_product
-                                            JOIN 
-                                                products ON sales_product.product = products.id
-                                            JOIN 
-                                                category ON sales_product.category = category.id
-                                            LEFT JOIN 
-                                                users ON sales_product.created_by = users.id
-                                            ORDER BY 
-                                                sales_product.date DESC
-                                        ");
-                                        $stmt->execute();
-                                        $sales_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                        <?php if ($has_stock_view_permission): ?>
+                                            <?php
+                                            // Updated SQL query to get available_stock directly from sales_product
+                                            $stmt = $conn->prepare("
+                                                SELECT 
+                                                    sales_product.id, 
+                                                    sales_product.date, 
+                                                    sales_product.product, 
+                                                    products.product_name, 
+                                                    sales_product.available_stock, 
+                                                    sales_product.sales, 
+                                                    COALESCE(CONCAT(users.first_name, ' ', users.last_name), 'User Deleted') AS full_name, 
+                                                    category.category_name, 
+                                                    sales_product.created_at
+                                                FROM 
+                                                    sales_product
+                                                JOIN 
+                                                    products ON sales_product.product = products.id
+                                                JOIN 
+                                                    category ON sales_product.category = category.id
+                                                LEFT JOIN 
+                                                    users ON sales_product.created_by = users.id
+                                                ORDER BY 
+                                                    sales_product.date DESC
+                                            ");
+                                            $stmt->execute();
+                                            $sales_data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                                        // Organize data by date
-                                        $data = [];
-                                        foreach($sales_data as $sale) {
-                                            $date = $sale['date'];
-                                            if (!isset($data[$date])) {
-                                                $data[$date] = [];
+                                            // Organize data by date
+                                            $data = [];
+                                            foreach ($sales_data as $sale) {
+                                                $date = $sale['date'];
+                                                if (!isset($data[$date])) {
+                                                    $data[$date] = [];
+                                                }
+                                                $data[$date][] = $sale;
                                             }
-                                            $data[$date][] = $sale;
-                                        }
-                                    ?>
+                                            ?>
 
-                                        <?php
-                                            foreach($data as $sale_date => $sales){
-                                        ?>
-                                        <div class="poList" id="container-<?= str_replace(['-', ' '], ['_', '_'], $sale_date) ?>">
-                                            <p>Date: <?= $sale_date ?></p>
-                                            <table>
-                                                <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Product</th>
-                                                        <th>Available Stock</th> <!-- New Column -->
-                                                        <th>Sales</th>
-                                                        <th>Category</th>
-                                                        <th>Added By</th>
-                                                        <th>Created Date</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <?php foreach($sales as $index => $sale): ?>
-                                                    <tr>
-                                                        <td><?= $index + 1 ?></td>
-                                                        <td class="po_product"><?= $sale['product_name']?></td>
-                                                        <td class="po_stock"><?= $sale['available_stock']?></td> <!-- New Column -->
-                                                        <td class="po_qty_sales"><?= $sale['sales']?></td>
-                                                        <td class="po_category"><?= $sale['category_name']?></td>
-                                                        <td><?= $sale['full_name']?></td>
-                                                        <td>
-                                                            <?= $sale['created_at']?>
-                                                            <input type="hidden" class="po_qty_row_id" value="<?= $sale['id']?>">
-                                                            <input type="hidden" class="po_qty_productid" value="<?= $sale['product']?>">
-                                                        </td>
-                                                        <td>
-                                                            <button class="appDeliveryHistoryBtn deleteSalesBtn" data-id="<?= $sale['id']?>">Delete</button>
-                                                        </td>
-                                                    </tr>
-                                                    <?php endforeach; ?>
-                                                </tbody>
-                                            </table>
-
-                                            <!-- <div class="soSalesUpdateBtnContainer alignRight"> -->
-                                                <!-- Removed undefined variable batch_id
-                                                <button class="orderBtn updateSoBtn" data-id="<?= str_replace(['-', ' '], ['_', '_'], $sale_date) ?>">Update</button>
-                                            </div> -->
-                                        </div>
-                                        <?php } ?>
+                                            <?php foreach ($data as $sale_date => $sales): ?>
+                                                <div class="poList" id="container-<?= str_replace(['-', ' '], ['_', '_'], $sale_date) ?>">
+                                                    <p>Date: <?= $sale_date ?></p>
+                                                    <table>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Product</th>
+                                                                <th>Available Stock</th>
+                                                                <th>Sales</th>
+                                                                <th>Category</th>
+                                                                <th>Added By</th>
+                                                                <th>Created Date</th>
+                                                                <th>Action</th> <!-- Added Action Column -->
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <?php foreach ($sales as $index => $sale): ?>
+                                                                <tr>
+                                                                    <td><?= $index + 1 ?></td>
+                                                                    <td class="po_product"><?= $sale['product_name'] ?></td>
+                                                                    <td class="po_stock"><?= $sale['available_stock'] ?></td>
+                                                                    <td class="po_qty_sales"><?= $sale['sales'] ?></td>
+                                                                    <td class="po_category"><?= $sale['category_name'] ?></td>
+                                                                    <td><?= $sale['full_name'] ?></td>
+                                                                    <td>
+                                                                        <?= $sale['created_at'] ?>
+                                                                        <input type="hidden" class="po_qty_row_id" value="<?= $sale['id'] ?>">
+                                                                        <input type="hidden" class="po_qty_productid" value="<?= $sale['product'] ?>">
+                                                                    </td>
+                                                                    <td>
+                                                                        <button class="appDeliveryHistoryBtn deleteSalesBtn" data-id="<?= $sale['id'] ?>">Delete</button>
+                                                                    </td>
+                                                                </tr>
+                                                            <?php endforeach; ?>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <div style="margin: 50px;">
+                                                <h2>You have no access to this page.</h2>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>
@@ -238,17 +242,30 @@ $user = $_SESSION['user'];
                     });
                 }
 
-                if(classList.contains('deleteSalesBtn')){
+                if (classList.contains('deleteSalesBtn')) {
                     e.preventDefault();
 
                     var salesId = targetElement.dataset.id;
+
+                    // Check if the user has the 'stock_delete' permission
+                    var userPermissions = <?php echo json_encode($user['permissions']); ?>; // Assuming permissions are available in the PHP context
+                    var hasDeletePermission = userPermissions.split(',').includes('stock_delete');
+
+                    if (!hasDeletePermission) {
+                        // Alert if the user doesn't have permission
+                        BootstrapDialog.alert({
+                            type: BootstrapDialog.TYPE_WARNING,
+                            message: 'Access denied. You do not have permission to delete sales records.',
+                        });
+                        return; // Exit the function
+                    }
 
                     BootstrapDialog.confirm({
                         type: BootstrapDialog.TYPE_DANGER,
                         title: 'Delete Sales Record',
                         message: 'Are you sure you want to delete this sales record?',
                         callback: function (result) {
-                            if(result){
+                            if (result) {
                                 $.ajax({
                                     method: 'POST',
                                     url: 'database/delete-sales.php',
@@ -280,6 +297,7 @@ $user = $_SESSION['user'];
                         }
                     });
                 }
+
             });
         }
 

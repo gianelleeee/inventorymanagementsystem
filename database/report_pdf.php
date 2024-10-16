@@ -2,6 +2,8 @@
 require('../vendor/fpdf/fpdf.php'); // Update this to the actual path of your FPDF library
 
 $type = $_GET['report'];
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : null;
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : null;
 
 $mapping_filenames = [
     'category' => 'Category Report',
@@ -84,6 +86,11 @@ function outputDataRows($data, $columnWidths, $pdf, $header) {
 
 $data = []; // Initialize data array
 
+$whereClause = "";
+if ($start_date && $end_date) {
+    $whereClause = "WHERE DATE(created_at) BETWEEN :start_date AND :end_date";
+}
+
 if ($type === 'product') {
     // Query for product report
     $stmt = $conn->prepare("
@@ -92,8 +99,13 @@ if ($type === 'product') {
                CONCAT(u.first_name, ' ', u.last_name) AS user_name, p.created_at, p.updated_at
         FROM products p
         LEFT JOIN users u ON p.created_by = u.id
+        $whereClause
         ORDER BY p.created_at DESC
     ");
+    if ($whereClause) {
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->bindParam(':end_date', $end_date);
+    }
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
     $products = $stmt->fetchAll();
@@ -119,9 +131,14 @@ if ($type === 'product') {
         LEFT JOIN category c ON pc.category = c.id
         LEFT JOIN users u ON c.created_by = u.id
         LEFT JOIN products p ON pc.product = p.id
+        $whereClause
         GROUP BY c.category_name, u.first_name, u.last_name, c.created_at, c.updated_at
         ORDER BY c.created_at DESC
     ");
+    if ($whereClause) {
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->bindParam(':end_date', $end_date);
+    }
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
     $categories = $stmt->fetchAll();
@@ -146,8 +163,13 @@ if ($type === 'product') {
         LEFT JOIN productscategory pc ON op.product = pc.product
         LEFT JOIN products p ON pc.product = p.id
         LEFT JOIN category c ON pc.category = c.id
+        $whereClause
         ORDER BY d.date_received DESC;
     ");
+    if ($whereClause) {
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->bindParam(':end_date', $end_date);
+    }
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
     $deliveries = $stmt->fetchAll();
@@ -174,14 +196,18 @@ if ($type === 'product') {
         LEFT JOIN products p ON pc.product = p.id
         LEFT JOIN category c ON pc.category = c.id
         LEFT JOIN users u ON op.created_by = u.id
+        $whereClause
         GROUP BY op.batch, p.product_name, op.quantity_ordered, op.quantity_received, c.category_name, op.status, u.first_name, u.last_name, op.created_at
         ORDER BY op.created_at DESC;
     ");
+    if ($whereClause) {
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->bindParam(':end_date', $end_date);
+    }
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
     $purchases = $stmt->fetchAll();
     
-    $data = []; // Initialize the data array
     foreach ($purchases as $purchase) {
         $data[] = [
             $purchase['batch'],
@@ -197,36 +223,42 @@ if ($type === 'product') {
 } elseif ($type === 'sale') {
     // Query for sales report
     $stmt = $conn->prepare("
-        SELECT sp.date, p.product_name, sp.sales, c.category_name, 
-               sp.available_stock, 
-               CONCAT(u.first_name, ' ', u.last_name) AS created_by, sp.created_at
-        FROM sales_product sp
-        LEFT JOIN productscategory pc ON sp.product = pc.product
-        LEFT JOIN products p ON pc.product = p.id
+        SELECT s.date, p.product_name, s.sales, p.available_stock, c.category_name, 
+               CONCAT(u.first_name, ' ', u.last_name) AS added_by, s.created_at
+        FROM sales_product s
+        LEFT JOIN products p ON s.product = p.id
+        LEFT JOIN productscategory pc ON p.id = pc.product
         LEFT JOIN category c ON pc.category = c.id
-        LEFT JOIN users u ON sp.created_by = u.id
-        ORDER BY sp.date DESC
+        LEFT JOIN users u ON s.created_by = u.id
+        $whereClause
+        ORDER BY s.created_at DESC;
     ");
+    if ($whereClause) {
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->bindParam(':end_date', $end_date);
+    }
     $stmt->execute();
     $stmt->setFetchMode(PDO::FETCH_ASSOC);
     $sales = $stmt->fetchAll();
     
-    $count = 1; // Initialize the counter
     foreach ($sales as $sale) {
         $data[] = [
             $sale['date'],
             $sale['product_name'],
             $sale['sales'],
-            $sale['available_stock'], // Add 'available stocks'
+            $sale['available_stock'],
             $sale['category_name'],
-            $sale['created_by'],
+            $sale['added_by'],
             $sale['created_at']
         ];
     }
 }
 
+// Calculate column widths
 $columnWidths = calculateColumnWidths($data, $header, $pdf);
+
+// Output the data rows
 outputDataRows($data, $columnWidths, $pdf, $header);
 
-$pdf->Output('D', $file_name);
+$pdf->Output();
 ?>

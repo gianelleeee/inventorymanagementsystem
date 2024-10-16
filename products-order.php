@@ -1,16 +1,22 @@
 <?php
 // Start the session
-    session_start();
-    if (!isset($_SESSION['user'])) {
-        header('Location: index.php');
-        exit();
-    }
-    $user = $_SESSION['user'];
+session_start();
+if (!isset($_SESSION['user'])) {
+    header('Location: index.php');
+    exit();
+}
+$user = $_SESSION['user'];
 
+// Check if the user has 'product_add' permission
+if (strpos($user['permissions'], 'product_add') === false) {
+    $hasAccess = false;
+} else {
+    $hasAccess = true;
     // Get all products
     $show_table = 'products';
     $products = include('database/show.php');
     $products = json_encode($products);
+}
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +34,12 @@
                 <div class="dashboard_content_main">
                     <div class="row">
                         <div class="column column-12">
-                            <h1 class="section_header"> <i class="fa fa-plus"></i> Order Product</h1>
+                                <h1 class="section_header"> <i class="fa fa-plus"></i> Order Product</h1>
+                                <?php if (!$hasAccess): ?>
+                                    <div style="margin: 50px;">
+                                        <h2>You have no access to this page.</h2>
+                                    </div>
+                                <?php else: ?>
                                 <div>
                                     <form action="database/save-order.php" method="POST">
                                         <div class="alignRight">
@@ -38,7 +49,7 @@
                                         <div id="orderProductLists">
                                             <p id="noData" style="color: #9f9f9f;">No Products Selected</p>
                                         </div>
-                                            
+
                                         <div class="alignRight marginTop20">
                                             <button type="submit" class="orderBtn submitOrderProductBtn">Submit Order</button>
                                         </div>
@@ -55,6 +66,7 @@
                                         </p>
                                     </div>
                                 <?php unset($_SESSION['response']); } ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

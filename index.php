@@ -5,11 +5,16 @@ if (isset($_SESSION['user'])) header('location: dashboard.php');
 
 $error_message = '';
 $redirect_to_verification = false;
+
+// Initialize email and password variables
+$email = '';
+$password = '';
+
 if ($_POST) {
     include('database/connection.php');
 
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = $_POST['email']; // Capture email from POST
+    $password = $_POST['password']; // Capture password from POST
 
     $query = 'SELECT * FROM users WHERE users.email = :email LIMIT 1';
     $stmt = $conn->prepare($query);
@@ -24,8 +29,12 @@ if ($_POST) {
         if ($user['status'] == 1) {
             // Verify the hashed password
             if (password_verify($password, $user['password'])) {
-                // Captures data of the currently logged-in user
+                // Decode permissions from JSON string to array
+                $permissions = json_decode($user['permissions'], true);
+                
+                // Store user data and permissions in session
                 $_SESSION['user'] = $user;
+                $_SESSION['permissions'] = $permissions; // Store permissions array
                 
                 header('Location: dashboard.php');
                 exit();
@@ -56,7 +65,6 @@ if ($_POST) {
 <html lang="en">
 <head>
     <title>IMS Login</title>
-
     <link rel="stylesheet" type="text/css" href="css/stylesheet.css">
     <style>
         .link a {
@@ -100,11 +108,11 @@ if ($_POST) {
                 <p class="text-center">Login with your email and password.</p>
                 <div class="loginInputsContainer">
                     <label for="">Email</label>
-                    <input placeholder="email" name="email" type="text" />
+                    <input placeholder="email" name="email" type="text" value="<?= htmlspecialchars($email) ?>" required />
                 </div>
                 <div class="loginInputsContainer">
                     <label for="">Password</label>
-                    <input placeholder="password" name="password" type="password" />
+                    <input placeholder="password" name="password" type="password" required />
                 </div>
                 <div class="link forget-pass text-left" style="padding-top: 6px;"><a href="forgot-password.php">Forgot password?</a></div>
                 <div class="loginButtonContainer">

@@ -1,95 +1,77 @@
 <?php
+// Start the session
 session_start();
-include('connection.php');
 
-// Ensure Composer's autoloader is included first
-require '../vendor/autoload.php';
+// Set the default timezone to Philippines
+date_default_timezone_set('Asia/Manila');
 
-// Use PHPMailer classes
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-if (isset($_POST["email"]) && isset($_POST["password"]) && isset($_POST["first_name"]) && isset($_POST["last_name"])) {
-    $email = $_POST["email"];
-    $password = $_POST["password"];
-    $first_name = $_POST["first_name"];
-    $last_name = $_POST["last_name"];
-
-    // Sanitize user input
-    $email = filter_var($email, FILTER_SANITIZE_EMAIL);
-    $password = htmlspecialchars($password);
-    $first_name = htmlspecialchars($first_name);
-    $last_name = htmlspecialchars($last_name);
-
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['response'] = ['message' => 'Invalid email format', 'success' => false];
-        header('Location: ../register.php');
-        exit;
-    }
-
-    try {
-        // Check if email already exists
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $rowCount = $stmt->rowCount();
-
-        if (!empty($email) && !empty($password) && !empty($first_name) && !empty($last_name)) {
-            if ($rowCount > 0) {
-                $_SESSION['response'] = ['message' => 'User with email already exists!', 'success' => false];
-                header('Location: ../register.php');
-                exit;
-            } else {
-                $password_hash = password_hash($password, PASSWORD_BCRYPT);
-
-                // Insert new user
-                $stmt = $conn->prepare("INSERT INTO users (email, password, first_name, last_name, status, created_at, updated_at) VALUES (:email, :password, :first_name, :last_name, 0, NOW(), NOW())");
-                $stmt->bindParam(':email', $email);
-                $stmt->bindParam(':password', $password_hash);
-                $stmt->bindParam(':first_name', $first_name);
-                $stmt->bindParam(':last_name', $last_name);
-                $result = $stmt->execute();
-
-                if ($result) {
-                    $otp = rand(100000, 999999);
-                    $_SESSION['otp'] = $otp;
-                    $_SESSION['mail'] = $email;
-
-                    $mail = new PHPMailer(true);
-
-                    try {
-                        $mail->isSMTP();
-                        $mail->Host = 'smtp.gmail.com';
-                        $mail->Port = 587;
-                        $mail->SMTPAuth = true;
-                        $mail->SMTPSecure = 'tls';
-                        $mail->Username = 'gianelleeee@gmail.com'; // Hardcoded email
-                        $mail->Password = 'wylkejnrpmrctsyy'; // Hardcoded password
-
-                        $mail->setFrom('gianelleeee@gmail.com', 'OTP Verification'); // Hardcoded email
-                        $mail->addAddress($email);
-
-                        $mail->isHTML(true);
-                        $mail->Subject = 'Your verification code';
-                        $mail->Body = "<p>Dear user, </p> <h3>Your verification OTP code is $otp</h3>";
-
-                        $mail->send();
-                        $_SESSION['response'] = ['message' => 'Registration successful. OTP sent to '.$email, 'success' => true];
-                        header('Location: ../verification.php');
-                        exit;
-                    } catch (Exception $e) {
-                        $_SESSION['response'] = ['message' => 'Registration failed. Mail could not be sent. Mailer Error: '.$mail->ErrorInfo, 'success' => false];
-                        header('Location: ../register.php');
-                        exit;
-                    }
-                }
-            }
-        }
-    } catch (PDOException $e) {
-        $_SESSION['response'] = ['message' => 'Database error: ' . $e->getMessage(), 'success' => false];
-        header('Location: ../register.php');
-        exit;
-    }
+// Ensure email is set
+if (!isset($_POST['email']) || empty($_POST['email'])) {
+    $_SESSION['response'] = [
+        'success' => false,
+        'message' => 'Email is required.'
+    ];
+    header('Location: ../' . $_SESSION['redirect_to']);
+    exit();
 }
+
+// Capture the user info from the session
+$user = $_SESSION['user'];
+
+// Capture email and permissions
+$email = $_POST['email'];
+$permissions = isset($_POST['permissions']) ? $_POST['permissions'] : '';
+
+// Prepare the database insert array
+$currentTimestamp = date('Y-m-d H:i:s'); // Current timestamp
+$db_arr = [
+    'email' => $email,
+    'permissions' => $permissions, // Add permissions to the array
+    'created_at' => $currentTimestamp, // Set created_at to current timestamp
+    'updated_at' => $currentTimestamp, // Set updated_at to the same timestamp
+    'created_by' => $user['id'] // Assuming you track who added the record
+];
+
+try {
+    // Include the database connection file
+    include('connection.php');
+
+    // Check if the email already exists
+    $checkSql = "SELECT COUNT(*) FROM users WHERE email = :email";
+    $checkStmt = $conn->prepare($checkSql);
+    $checkStmt->execute(['email' => $email]);
+    $emailExists = $checkStmt->fetchColumn();
+
+    if ($emailExists > 0) {
+        // If the email exists, return a response
+        $_SESSION['response'] = [
+            'success' => false,
+            'message' => 'Email already exists in the system.'
+        ];
+    } else {
+        // Create the insert query
+        $sql = "INSERT INTO users (email, permissions, created_at, updated_at, created_by) 
+                VALUES (:email, :permissions, :created_at, :updated_at, :created_by)";
+        
+        // Prepare and execute the insert query
+        $stmt = $conn->prepare($sql);
+        $stmt->execute($db_arr);
+
+        // On success
+        $_SESSION['response'] = [
+            'success' => true,
+            'message' => 'Successfully added the email and permissions to the system!'
+        ];
+    }
+} catch (PDOException $e) {
+    // On error
+    $_SESSION['response'] = [
+        'success' => false,
+        'message' => 'Error: ' . $e->getMessage()
+    ];
+}
+
+// Redirect to the original form page
+header('Location: ../' . $_SESSION['redirect_to']);
+exit();
 ?>

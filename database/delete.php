@@ -24,15 +24,19 @@
         if ($table === 'category') {
             $category_id = $id;
 
-            // Delete related rows
-            $command = $conn->prepare("DELETE FROM order_product WHERE category = :id");
+            // Set related rows to NULL instead of deleting them
+            $command = $conn->prepare("UPDATE order_product SET category = NULL WHERE category = :id");
             $command->execute([':id' => $category_id]);
 
-            $command = $conn->prepare("DELETE FROM sales_product WHERE category = :id");
+            $command = $conn->prepare("UPDATE sales_product SET category = NULL WHERE category = :id");
+            $command->execute([':id' => $category_id]);
+
+            // Finally, set the category itself to NULL in productscategory table
+            $command = $conn->prepare("UPDATE productscategory SET category = NULL WHERE category = :id");
             $command->execute([':id' => $category_id]);
 
             // Delete the category itself
-            $command = $conn->prepare("DELETE FROM productscategory WHERE category = :id");
+            $command = $conn->prepare("DELETE FROM category WHERE id = :id");
             $command->execute([':id' => $category_id]);
         }
 

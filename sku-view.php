@@ -6,23 +6,29 @@ if (!isset($_SESSION['user'])) {
 }
 
 include('database/connection.php');
-$show_table = 'category';
 $user = $_SESSION['user'];
-$category = include('database/show.php'); 
 
+// Check if the user has the 'category_view' permission
+$hasPermission = in_array('category_view', explode(',', $user['permissions']));
 
-$show_table = 'products';
-$products = include('database/show.php');
+// Only include the database queries if the user has permission
+if ($hasPermission) {
+    $show_table = 'category';
+    $category = include('database/show.php'); 
 
-$products_arr = [ ];
+    $show_table = 'products';
+    $products = include('database/show.php');
 
-foreach($products as $product){
-    $products_arr[$product['id']] = $product['product_name'];
+    $products_arr = [];
+
+    foreach($products as $product){
+        $products_arr[$product['id']] = $product['product_name'];
+    }
+
+    $products_arr = json_encode($products_arr);
+} else {
+    $category = [];
 }
-
-$products_arr = json_encode($products_arr);
-
-
 ?>
 
 <!DOCTYPE html>
@@ -42,68 +48,74 @@ $products_arr = json_encode($products_arr);
                         <div class="column column-12">
                             <h1 class="section_header"><i class="fa fa-list"></i> List of Categories</h1>
                             <div class="section_content">
-                                <div class="users">
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Category Name</th>
-                                                <th>Products</th>
-                                                <th>Created By</th>
-                                                <th>Created At</th>
-                                                <th>Updated At</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach($category as $index => $cat){ ?>
+                                <?php if ($hasPermission): ?>
+                                    <div class="users">
+                                        <table>
+                                            <thead>
                                                 <tr>
-                                                    <td><?= $index + 1 ?></td>
-                                                    <td class="categoryName"><?= $cat['category_name'] ?></td>
-                                                    <td class="products_category">
-                                                        <?php
-                                                        $cid = $cat['id'];
-                                                        $stmt = $conn->prepare("SELECT product_name FROM products, productscategory WHERE productscategory.category=:cid AND productscategory.product=products.id");
-                                                        $stmt->bindParam(':cid', $cid, PDO::PARAM_INT);
-                                                        $stmt->execute();
-                                                        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                                        if ($products) {
-                                                            echo '<ul>';
-                                                            foreach ($products as $product) {
-                                                                echo '<li>' . htmlspecialchars($product['product_name']) . '</li>';
-                                                            }
-                                                            echo '</ul>';
-                                                        }
-                                                        ?>
-                                                    </td>
-                                                    <td class="created_by">
-                                                        <?php
-                                                        $created_by = $cat['created_by'];
-                                                        $stmt = $conn->prepare("SELECT * FROM users WHERE id=:created_by");
-                                                        $stmt->bindParam(':created_by', $created_by, PDO::PARAM_INT);
-                                                        $stmt->execute();
-                                                        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                                                        if ($user) {
-                                                            $created_by_name = htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
-                                                            echo $created_by_name;
-                                                        } else {
-                                                            echo "User Deleted";
-                                                        }
-                                                        ?>
-                                                    </td>
-                                                    <td><?= date('M d, Y @ h:i:s A', strtotime($cat['created_at'])) ?></td>
-                                                    <td><?= date('M d, Y @ h:i:s A', strtotime($cat['updated_at'])) ?></td>
-                                                    <td>
-                                                        <a href="#" class="updateCategory" data-cid="<?= $cat['id'] ?>"><i class="fa fa-pencil"></i> Edit</a>
-                                                        <a href="#" class="deleteCategory" data-name="<?= $cat['category_name'] ?>" data-cid="<?= $cat['id'] ?>"><i class="fa fa-trash"></i> Delete</a>
-                                                    </td>
+                                                    <th>#</th>
+                                                    <th>Category Name</th>
+                                                    <th>Products</th>
+                                                    <th>Created By</th>
+                                                    <th>Created At</th>
+                                                    <th>Updated At</th>
+                                                    <th>Action</th>
                                                 </tr>
-                                            <?php }?>
-                                        </tbody>
-                                    </table>
-                                    <p class="product_count"><?= count($category) ?> Categories</p>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach($category as $index => $cat): ?>
+                                                    <tr>
+                                                        <td><?= $index + 1 ?></td>
+                                                        <td class="categoryName"><?= htmlspecialchars($cat['category_name']) ?></td>
+                                                        <td class="products_category">
+                                                            <?php
+                                                            $cid = $cat['id'];
+                                                            $stmt = $conn->prepare("SELECT product_name FROM products, productscategory WHERE productscategory.category=:cid AND productscategory.product=products.id");
+                                                            $stmt->bindParam(':cid', $cid, PDO::PARAM_INT);
+                                                            $stmt->execute();
+                                                            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                                            if ($products) {
+                                                                echo '<ul>';
+                                                                foreach ($products as $product) {
+                                                                    echo '<li>' . htmlspecialchars($product['product_name']) . '</li>';
+                                                                }
+                                                                echo '</ul>';
+                                                            }
+                                                            ?>
+                                                        </td>
+                                                        <td class="created_by">
+                                                            <?php
+                                                            $created_by = $cat['created_by'];
+                                                            $stmt = $conn->prepare("SELECT * FROM users WHERE id=:created_by");
+                                                            $stmt->bindParam(':created_by', $created_by, PDO::PARAM_INT);
+                                                            $stmt->execute();
+                                                            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                                                            if ($user) {
+                                                                $created_by_name = htmlspecialchars($user['first_name'] . ' ' . $user['last_name']);
+                                                                echo $created_by_name;
+                                                            } else {
+                                                                echo "User Deleted";
+                                                            }
+                                                            ?>
+                                                        </td>
+                                                        <td><?= date('M d, Y @ h:i:s A', strtotime($cat['created_at'])) ?></td>
+                                                        <td><?= date('M d, Y @ h:i:s A', strtotime($cat['updated_at'])) ?></td>
+                                                        <td>
+                                                            <a href="#" class="updateCategory" data-cid="<?= $cat['id'] ?>"><i class="fa fa-pencil"></i> Edit</a>
+                                                            <a href="#" class="deleteCategory" data-name="<?= htmlspecialchars($cat['category_name']) ?>" data-cid="<?= $cat['id'] ?>"><i class="fa fa-trash"></i> Delete</a>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                        <p class="product_count"><?= count($category) ?> Categories</p>
+                                    </div>
+                                <?php else: ?>
+                                    <div style="margin: 50px;">
+                                        <h2>You have no access to this page.</h2>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
@@ -112,8 +124,7 @@ $products_arr = json_encode($products_arr);
         </div>
     </div>
 
-    <?php include('partials/scripts.php');?>
-
+    <?php include('partials/scripts.php'); ?>
 
 
     <script>
@@ -125,6 +136,17 @@ $products_arr = json_encode($products_arr);
             e.preventDefault();
             var cId = $(this).data('cid');
             var categoryName = $(this).data('name');
+
+            // Check if the user has the 'category_delete' permission
+            var hasDeletePermission = <?= json_encode(in_array('category_delete', explode(',', $_SESSION['user']['permissions']))) ?>;
+
+            if (!hasDeletePermission) {
+                BootstrapDialog.alert({
+                     type: BootstrapDialog.TYPE_WARNING,
+                    message: 'Access Denied: You do not have permission to delete products.'
+                });
+                return; // Exit the function if the user does not have permission
+            }
 
             BootstrapDialog.confirm({
                 type: BootstrapDialog.TYPE_DANGER,
@@ -163,6 +185,18 @@ $products_arr = json_encode($products_arr);
         $('.updateCategory').on('click', function (e) {
             e.preventDefault();
             var cId = $(this).data('cid');
+
+            // Check if the user has the 'category_edit' permission
+            var hasEditPermission = <?= json_encode(in_array('category_edit', explode(',', $_SESSION['user']['permissions']))) ?>;
+
+            if (!hasEditPermission) {
+                BootstrapDialog.alert({
+                    type: BootstrapDialog.TYPE_WARNING,
+                    message: 'Access Denied: You do not have permission to edit categories.'
+                });
+                return; // Exit the function if the user does not have permission
+            }
+
             showEditDialog(cId);
         });
 
